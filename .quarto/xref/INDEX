@@ -4,5 +4,8 @@
   },
   "about.qmd": {
     "about.html": "41693772"
+  },
+  "lessons/lesson2/lesson2_handson.qmd": {
+    "lesson2_handson.html": "e62afbb0"
   }
 }
