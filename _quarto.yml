@@ -8,6 +8,10 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
+      - text: "Hands on exercises"
+        menu: 
+        - text: "Hands-on exercise 1"
+          href: lessons/lesson2/lesson2_handson.qmd
 
 format:
   html:
