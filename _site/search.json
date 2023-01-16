@@ -25,6 +25,6 @@
     "href": "lessons/lesson2/lesson2_inclass_ex.html",
     "title": "IS415-GAA-WY",
     "section": "",
-    "text": "Read the data\n\npacman::p_load(sf, tidyverse)"
+    "text": "In-class Exercise 2 - Read the data\n\npacman::p_load(sf, tidyverse)"
   }
 ]
