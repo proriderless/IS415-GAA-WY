@@ -9,3 +9,29 @@ execute:
   
 editor: visual
 ---
+
+### Install Packages
+
+::: callout-tip
+Packages are important.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+pacman::p_load(sf, tidyverse, funModeling)
+```
+
+### Loading the file
+
+```{r}
+geoNGA <- st_read("data/geospatial/nigeria_nga_l2/", layer="geoBoundaries-NGA-ADM2") %>% 
+  st_transform(crs=26392)
+```
+
+%\>%
+
+```{r}
+wp_nga <- st_read("data/geospatial/nigeria_nga_l2/", layer="nga_admbnda_adm2_osgof_20190417") %>% 
+  st_transform(crs=26392)
+```
