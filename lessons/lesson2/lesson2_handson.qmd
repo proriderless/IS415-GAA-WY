@@ -81,8 +81,7 @@ mpsz3414 <- mpsz3414 %>%
 ```{r}
 ```
 
-```{summary(mpsz3414$`PreSch Density`)}
-```
+`` {summary(mpsz3414$`PreSch Density`)} ``
 
 ### Exploratory Data Analysis
 

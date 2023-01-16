@@ -2,9 +2,7 @@
 title: "IS415-GAA-WY"
 ---
 
-This is a Quarto website.
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+This is the course website.
 
 ```{r}
 1 + 1

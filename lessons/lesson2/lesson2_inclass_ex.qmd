@@ -1,0 +1,9 @@
+### In-class Exercise 2 - Read the data
+
+```{r}
+pacman::p_load(sf, tidyverse)
+```
+
+```{r}
+
+```
