@@ -12,6 +12,8 @@ website:
         menu: 
         - text: "Hands-on exercise 1"
           href: lessons/lesson2/lesson2_handson.qmd
+        - text: "Hands-on exercise 2"
+          href: handson-ex/lesson3/hands-on-ex3.qmd
       - text: "In-class Exercise"
         menu: 
         - text: "In-class exercise 2"
