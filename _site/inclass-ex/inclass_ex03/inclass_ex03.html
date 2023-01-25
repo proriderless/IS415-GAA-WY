@@ -202,6 +202,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#percentile-map" id="toc-percentile-map" class="nav-link" data-scroll-target="#percentile-map"><span class="toc-section-number">0.5</span>  Percentile Map</a></li>
   <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation"><span class="toc-section-number">0.6</span>  Data Preparation:</a></li>
   <li><a href="#step-2-creating-customized-classification-and-extracting-values" id="toc-step-2-creating-customized-classification-and-extracting-values" class="nav-link" data-scroll-target="#step-2-creating-customized-classification-and-extracting-values"><span class="toc-section-number">0.7</span>  Step 2: Creating customized classification and extracting values</a></li>
+  <li><a href="#boxplot" id="toc-boxplot" class="nav-link" data-scroll-target="#boxplot"><span class="toc-section-number">0.8</span>  Boxplot</a></li>
   </ul>
 </nav>
     </div>
@@ -361,7 +362,7 @@ Note
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>percentmap <span class="ot">&lt;-</span> <span class="cf">function</span>(vnam,df, <span class="at">legtitle=</span><span class="cn">NA</span>, <span class="at">mtitle=</span><span class="st">"Percentile Map"</span>){</span>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>percentmap <span class="ot">&lt;-</span> <span class="cf">function</span>(vnam, df,<span class="at">legtitle=</span><span class="cn">NA</span>, <span class="at">mtitle=</span><span class="st">"Percentile Map"</span>){</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  percent <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">01</span>,.<span class="dv">1</span>,.<span class="dv">5</span>,.<span class="dv">9</span>,.<span class="dv">99</span>,<span class="dv">1</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  var <span class="ot">&lt;-</span> <span class="fu">get.var</span>(vnam, df)</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  bperc <span class="ot">&lt;-</span> <span class="fu">quantile</span>(var, percent)</span>
@@ -370,7 +371,7 @@ Note
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(df) <span class="sc">+</span></span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_fill</span>(vnam,</span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">title=</span>legtitle,</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">breaks=</span>bpercs,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">breaks=</span>bperc,</span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">palette =</span> <span class="st">"Blues"</span>,</span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"&lt; 1%"</span>, <span class="st">"1% - 10%"</span>, <span class="st">"10% - 50%"</span>, <span class="st">"50% - 90%"</span>, <span class="st">"90% - 99%"</span>, <span class="st">"99% - 100%"</span>)) <span class="sc">+</span></span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_borders</span>() <span class="sc">+</span></span>
@@ -378,6 +379,22 @@ Note
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">title.position =</span> <span class="fu">c</span>(<span class="st">"right"</span>, <span class="st">"bottom"</span>))</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Running the function</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">percentmap</span>(<span class="st">"wp_nonfunctional"</span>, NGA_wp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="inclass_ex03_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="boxplot" class="level3" data-number="0.8">
+<h3 data-number="0.8" class="anchored" data-anchor-id="boxplot"><span class="header-section-number">0.8</span> Boxplot</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> NGA_wp, <span class="fu">aes</span>( <span class="at">x =</span> <span class="st">""</span>, <span class="at">y=</span>wp_nonfunctional)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="inclass_ex03_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
 </div>
 
 

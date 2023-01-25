@@ -146,3 +146,9 @@ Running the function
 ```{r}
 percentmap("wp_nonfunctional", NGA_wp)
 ```
+
+### Boxplot
+
+```{r}
+ggplot(data = NGA_wp, aes( x = "", y=wp_nonfunctional)) + geom_boxplot()
+```
