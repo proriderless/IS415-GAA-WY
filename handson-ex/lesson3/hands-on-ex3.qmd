@@ -1,6 +1,6 @@
 ---
 title: "Hands-on Exercise 2"
-date: "`r.Sys.Date()`"
+date: "`r Sys.Date()`"
 format: html
 
 execute:
