@@ -1,6 +1,6 @@
 ---
 title: "In-class Exercise 3"
-date: "`25 January 2023`"
+date: "25 January 2023"
 format: html
 date-modified: "`r Sys.Date()`"
 number-sections: true
