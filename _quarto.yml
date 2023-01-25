@@ -18,6 +18,8 @@ website:
         menu: 
         - text: "In-class exercise 2"
           href: lessons/lesson2/in-class-ex2.qmd
+        - text: "In-class exercise 3"
+          href: inclass-ex/inclass_ex03/inclass_ex03.qmd
 
 format:
   html:

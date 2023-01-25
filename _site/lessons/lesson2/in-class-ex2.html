@@ -175,6 +175,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <a class="dropdown-item" href="../../lessons/lesson2/in-class-ex2.html">
  <span class="dropdown-text">In-class exercise 2</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass_ex03/inclass_ex03.html">
+ <span class="dropdown-text">In-class exercise 3</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -199,6 +203,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#append-the-state-to-ensure-no-duplicatation" id="toc-append-the-state-to-ensure-no-duplicatation" class="nav-link" data-scroll-target="#append-the-state-to-ensure-no-duplicatation">Append the state to ensure no duplicatation</a></li>
   <li><a href="#group-them-by" id="toc-group-them-by" class="nav-link" data-scroll-target="#group-them-by">Group them by:</a></li>
   <li><a href="#append-the-water-point-count-into-the-new-dataframe" id="toc-append-the-water-point-count-into-the-new-dataframe" class="nav-link" data-scroll-target="#append-the-water-point-count-into-the-new-dataframe">Append the water point count into the new dataframe</a></li>
+  <li><a href="#plot-the-distribution-of-water-point" id="toc-plot-the-distribution-of-water-point" class="nav-link" data-scroll-target="#plot-the-distribution-of-water-point">Plot the distribution of water point</a></li>
   <li><a href="#saving-the-analytic-data-in-rds-format" id="toc-saving-the-analytic-data-in-rds-format" class="nav-link" data-scroll-target="#saving-the-analytic-data-in-rds-format">Saving the analytic data in rds format</a></li>
   </ul>
 </nav>
@@ -524,10 +529,25 @@ Note
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(NGA, wp_unknown)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
+<section id="plot-the-distribution-of-water-point" class="level3">
+<h3 class="anchored" data-anchor-id="plot-the-distribution-of-water-point">Plot the distribution of water point</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> NGA_wp, <span class="fu">aes</span>(<span class="at">x =</span> total_wp)) <span class="sc">+</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">20</span>, <span class="at">color=</span><span class="st">"black"</span>, <span class="at">fill=</span><span class="st">"light blue"</span>) <span class="sc">+</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="fu">aes</span>(<span class="at">xintercept=</span><span class="fu">mean</span>(total_wp,<span class="at">na.rm=</span>T)), <span class="at">color=</span><span class="st">"red"</span>,<span class="at">linetype=</span><span class="st">"dashed"</span>, <span class="at">size=</span><span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Distribution of total water points by LGA"</span>) <span class="sc">+</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"No. of water points"</span>) <span class="sc">+</span> </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"No. of</span><span class="sc">\n</span><span class="st">LGAs"</span>) <span class="sc">+</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.y=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="in-class-ex2_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
 <section id="saving-the-analytic-data-in-rds-format" class="level3">
 <h3 class="anchored" data-anchor-id="saving-the-analytic-data-in-rds-format">Saving the analytic data in rds format</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(NGA_wp, <span class="st">"data/rds/NGA_wp.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(NGA_wp, <span class="st">"data/rds/NGA_wp.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
