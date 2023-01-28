@@ -1,0 +1,21 @@
+---
+title: "Hands-on Exercise 4"
+date: "28 January 2023"
+format: html
+date-modified: "`r Sys.Date()`"
+number-sections: true
+
+execute:
+  message: true
+  warning: false
+  echo: true
+  eval: true
+  
+editor: visual
+---
+
+Loading packages
+
+```{r}
+pacman::p_load(maptools, sf, raster, spatstat, tmap)
+```
