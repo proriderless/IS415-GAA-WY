@@ -1,0 +1,233 @@
+---
+title: "In Class Exercise 2"
+date: "`r Sys.Date()`"
+format: html
+
+execute:
+  message: true
+  warning: false
+  
+editor: visual
+---
+
+
+### Install Packages
+
+::: callout-tip
+Packages are important. Try to use SF, not SP
+:::
+
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+pacman::p_load(sf, tidyverse, funModeling)
+```
+
+
+### Loading the file (Convert to the projection)
+
+
+```{r}
+geoNGA <- st_read("data/geospatial/nigeria_nga_l2/", layer="geoBoundaries-NGA-ADM2") %>% 
+  st_transform(crs=26392)
+```
+
+
+The below file is the same as the above.
+
+Except this has more information
+
+
+```{r}
+NGA <- st_read("data/geospatial/nigeria_nga_l2/", layer="nga_admbnda_adm2_osgof_20190417") %>% 
+  st_transform(crs=26392)
+```
+
+
+We pick the second one as it gives the state and LGA (local government area) boundary
+
+#### Water point data for Nigeria
+
+
+```{r}
+wp_nga <- read_csv("data/aspatial/water_point_data_exchange/wpdx.csv") %>% filter(`#clean_country_name`=="Nigeria")
+```
+
+
+Convert water point data into sf point features
+
+::: callout-note
+You can take the latitude degree and longitude degress
+:::
+
+
+```{r}
+wp_nga$Geometry <- st_as_sfc(wp_nga$`New Georeferenced Column`)
+wp_nga
+```
+
+
+Convert tibble dataframe into SF object
+
+::: callout-note
+Need to convert Aspatial into Geospatial, but they do not have projection.
+
+So need to tell R what is the projection in Aspatial (if it is wgs84, reconvert to that) -\> then transform from 26392
+:::
+
+
+```{r}
+wp_sf <- st_sf(wp_nga, crs=4326)
+wp_sf
+```
+
+
+Convert to the Nigeria projection system
+
+
+```{r}
+wp_sf <- wp_sf %>% st_transform(crs=26392)
+wp_sf
+```
+
+
+### Excluding Redundant fields
+
+The code below takes only the relevant column (column 3,4,8,9). As we only need them
+
+
+```{r}
+NGA <- NGA %>% 
+  select(c(3:4, 8:9))
+```
+
+
+### Checking for duplicate name
+
+Check for the quality of the data (data duplication, spatial data we want to check for missing value)
+
+In this case, we have a lot of duplicated fields
+
+
+```{r}
+NGA$ADM2_EN[duplicated(NGA$ADM2_EN)==TRUE]
+```
+
+
+The reason why is because there are 6 LGAs with the same name, but are in different states.
+
+### Append the state to ensure no duplicatation
+
+
+```{r}
+NGA$ADM2_EN[94] <- "Bassa, Kogi"
+NGA$ADM2_EN[95] <- "Bassa, Plateau"
+NGA$ADM2_EN[304] <- "Ifelodun, Kwara"
+NGA$ADM2_EN[305] <- "Ifelodun, Osun"
+NGA$ADM2_EN[355] <- "Irepodun, Kwara"
+NGA$ADM2_EN[356] <- "Irepodun, Osun"
+NGA$ADM2_EN[519] <- "Nasawara, Kano"
+NGA$ADM2_EN[520] <- "Nasawara, Nasawara"
+NGA$ADM2_EN[546] <- "Obi, Benue"
+NGA$ADM2_EN[547] <- "Obi, Nasawara"
+NGA$ADM2_EN[693] <- "Surulere, Lagos"
+NGA$ADM2_EN[694] <- "Surulere, Oyo"
+```
+
+```{r}
+freq(data = wp_sf, input = "#status_clean")
+```
+
+
+Mutate allows us to do data processing, replacing #status_clean to remove the '\#'
+
+We replace all na fields with 'unknown'
+
+
+```{r}
+wp_sf_nga <- wp_sf %>%
+  rename(status_clean = "#status_clean") %>%
+  select(status_clean) %>%
+  mutate(status_clean = replace_na(status_clean, "unknown"))
+```
+
+
+SF is a simple feature object, it will always have a geometric field, even though we only select one column which is 'status_clean'
+
+### Group them by:
+
+Functional
+
+
+```{r}
+wp_functional <- wp_sf_nga %>%
+  filter(status_clean %in% c("Functional", 
+                             "Functional but not in use", 
+                             "Functional but needs repair"))
+```
+
+
+Non-functional
+
+
+```{r}
+wp_nonfunctional <- wp_sf_nga %>%
+  filter(status_clean %in% c("Abandoned/Decommissioned", 
+                             "Abandoned", 
+                             "Non-Functional due to dry season",
+                             "Non-Functional",
+                             "Non functional due to dry season"))
+```
+
+
+Unknown
+
+
+```{r}
+wp_unknown <- wp_sf_nga %>%
+  filter(status_clean %in% c("unknown"))
+```
+
+
+### Append the water point count into the new dataframe
+
+::: callout-note
+The code below tells us how many water point intersects each LGA. (functional, nonfunctional, unknown) then append that information into the original NGA dataframe by creating a new dataframe NGA_wp
+:::
+
+
+```{r}
+NGA_wp <- NGA %>%
+  mutate(`total_wp` = lengths(
+    st_intersects(NGA, wp_sf_nga))) %>%
+  mutate(`wp_functional` = lengths(
+    st_intersects(NGA, wp_functional))) %>%
+  mutate(`wp_nonfunctional` = lengths(
+    st_intersects(NGA, wp_nonfunctional))) %>%
+  mutate(`wp_unknown` = lengths(
+    st_intersects(NGA, wp_unknown)))
+```
+
+
+### Plot the distribution of water point
+
+
+```{r}
+ggplot(data = NGA_wp, aes(x = total_wp)) +
+  geom_histogram(bins=20, color="black", fill="light blue") +
+  geom_vline(aes(xintercept=mean(total_wp,na.rm=T)), color="red",linetype="dashed", size=0.8) +
+  ggtitle("Distribution of total water points by LGA") +
+  xlab("No. of water points") + 
+  ylab("No. of\nLGAs") +
+  theme(axis.title.y=element_text(angle=0))
+```
+
+
+### Saving the analytic data in rds format
+
+
+```{r}
+write_rds(NGA_wp, "data/rds/NGA_wp.rds")
+```
+
