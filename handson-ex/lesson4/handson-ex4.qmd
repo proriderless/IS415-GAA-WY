@@ -127,7 +127,7 @@ tm_shape(childcare) +
 
 ```
 
-### Jittering Approach to identify duplicates 
+### Jittering Approach to identify duplicates
 
 Ensure they don't occupy the same space
 
@@ -244,7 +244,7 @@ plot(kde_childcareSG.bw, main = "bw.diggle")
 plot(kde_childcareSG.ppl, main = "bw.ppl")
 ```
 
-### Different kernel methods 
+### Different kernel methods
 
 Gaussian, Epanechnikov, Quartic and Dics
 
