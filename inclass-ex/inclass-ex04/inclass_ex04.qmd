@@ -41,5 +41,30 @@ mpsz_sf <- st_read(dsn = "data",
 
 ```{r}
 tmap_mode('view')
-tm_shape(childcare_sf)+tm_dots()
+tm_shape(childcare_sf)+
+  tm_dots()
+```
+
+#### Convert from Shape File to Spatial Feature File
+
+```{r}
+childcare <- as_Spatial(childcare_sf)
+mpsz <- as_Spatial(mpsz_sf)
+sg <- as_Spatial(sg_sf)
+```
+
+#### Convert from Spatial Feature to Generic
+
+```{r}
+childcare_sp <- as(childcare, "SpatialPoints")
+sg_sp <- as(sg, "SpatialPolygons")
+```
+
+#### Convert to PPP format (Spatstat)
+
+Cos for points they need x y coordinates
+
+```{r}
+childcare_ppp <- as(childcare_sp, "ppp")
+childcare_ppp
 ```
