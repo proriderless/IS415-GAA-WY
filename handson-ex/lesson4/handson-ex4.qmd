@@ -14,6 +14,14 @@ execute:
 editor: visual
 ---
 
+Notes:
+
+Point as events have to be full census, rather than only a sampling
+
+1st order - check patterns - random/not random;
+
+2nd order - how point events change with interactions with environment/data points
+
 Loading packages
 
 ```{r}
@@ -458,7 +466,7 @@ plot(density(childcare_tm_ppp.km,
 
 Testing spatial point patterns using Clark and Evans
 
-Across the board in sg: Good spread
+Across the board in sg: Good spread. P-value =\> 0.05, randomly distributed
 
 ```{r}
 clarkevans.test(childcareSG_ppp,
@@ -470,7 +478,7 @@ clarkevans.test(childcareSG_ppp,
 
 ### Clark and Evans Test: Choa chu kang planning area
 
-Result: VERY clustered
+Result: VERY clustered, but randomly distributed
 
 ```{r}
 clarkevans.test(childcare_ck_ppp,
@@ -482,7 +490,7 @@ clarkevans.test(childcare_ck_ppp,
 
 ### Clark and Evans Test: Tampines planning area
 
-Somewhat clustered
+Somewhat clustered, not randomly distributed
 
 ```{r}
 clarkevans.test(childcare_tm_ppp,

@@ -1,0 +1,45 @@
+---
+title: "In-class Exercise 4"
+author: "Wen Yang"
+date: "30 January 2023"
+format: html
+date-modified: "`r Sys.Date()`"
+number-sections: true
+
+execute:
+  message: true
+  warning: false
+  echo: true
+  eval: true
+  
+editor: visual
+---
+
+### Loading the package
+
+```{r}
+pacman::p_load(maptools, sf, raster, spatstat, tmap)
+```
+
+Things to learn from the code chunk
+
+### Importing Data
+
+```{r}
+childcare_sf <- st_read("data/childcare.geojson") %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+sg_sf <- st_read(dsn = "data", layer="CostalOutline")
+```
+
+```{r}
+mpsz_sf <- st_read(dsn = "data", 
+                layer = "MP14_SUBZONE_WEB_PL")
+```
+
+```{r}
+tmap_mode('view')
+tm_shape(childcare_sf)+tm_dots()
+```
