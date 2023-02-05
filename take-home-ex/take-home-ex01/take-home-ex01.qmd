@@ -8,3 +8,417 @@ execute:
   warning: false
 editor: visual
 ---
+
+### Load all the relevant packages
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse, maptools, raster, spatstat, tmap, funModeling)
+```
+
+### Load the Geospatial data from Humanitarian Data Exchange
+
+We filter out everything else that is unnecessary outside of Osun
+
+```{r}
+NGA_wp_geo <- st_read(dsn = "data/geospatial", 
+                layer = "nga_admbnda_adm2_osgof_20190417") %>% filter(ADM1_EN == "Osun") %>% st_transform(crs=26392)
+```
+
+::: callout-note
+From the above, we can tell that Nigeria is currently in WGS84
+:::
+
+### Get information from Nigeria -\> OSUN state only
+
+::: callout-note
+For our analysis, we are only looking for Osun state, so we'll filter out unnecessary states at this stage
+:::
+
+```{r}
+nga_wp_as <- read_csv("data/aspatial/nga_wp.csv") %>%
+  filter(`#clean_country_name` == "Nigeria", `#clean_adm1` == "Osun")
+```
+
+### Check for duplicated rows
+
+```{r}
+NGA_wp_geo$ADM2_EN[duplicated(NGA_wp_geo$ADM2_EN)==TRUE]
+```
+
+::: callout-note
+There are no duplicate rows, as we have filtered out only Osun States
+:::
+
+### Convert water point data into sf point features
+
+We need to convert the aspatial data into an sf dataframe
+
+Below function, we will create sfc object from existing wkt column
+
+```{r}
+nga_wp_as$Geometry = st_as_sfc(nga_wp_as$`New Georeferenced Column`)
+nga_wp_as
+```
+
+### Convert into table into sf object using the original wgs 84 coordinate system
+
+```{r}
+wp_sf <- st_sf(nga_wp_as, crs=4326)
+```
+
+This function will convert it into Nigeria's projected coordinate system
+
+```{r}
+wp_sf <- wp_sf %>%
+  st_transform(crs = 26392)
+```
+
+### Data Wrangling and Plotting of Water Point Data
+
+Considering that we are mapping out the functional and non-functional water points, we will check the number of status clean and non status clean.
+
+```{r}
+freq(data = wp_sf,
+     input = '#status_clean')
+```
+
+#### Rename column name from #status clean to status_clean and replace na with 'unknown' tag
+
+Need to prepend dplyr because raster has a similar function
+
+```{r}
+wp_sf_nga <- wp_sf %>% 
+  rename(status_clean = '#status_clean') %>%
+  dplyr::select(status_clean) %>%
+  mutate(status_clean = replace_na(
+    status_clean, "unknown"))
+
+```
+
+### Extract functional and non-functional water points
+
+```{r}
+wp_functional <- wp_sf_nga %>%
+  filter(status_clean %in%
+           c("Functional",
+             "Functional but not in use",
+             "Functional but needs repair"))
+
+wp_nonfunctional <- wp_sf_nga %>%
+  filter(status_clean %in%
+           c("Abandoned/Decommissioned",
+             "Abandoned",
+             "Non-Functional due to dry season",
+             "Non-Functional",
+             "Non functional due to dry season"))
+
+wp_unknown <- wp_sf_nga %>%
+  filter(status_clean == "unknown")
+```
+
+### Remove all unused or unneeded columns:
+
+```{r}
+NGA_wp_geo <- NGA_wp_geo %>%
+  dplyr::select(c(3:4, 8:9, ))
+```
+
+### Performing Point-in-Polygon count
+
+```{r}
+NGA_wp_count <- NGA_wp_geo %>% 
+  mutate(`total_wp` = lengths(
+    st_intersects(NGA_wp_geo, wp_sf_nga))) %>%
+  mutate(`wp_functional` = lengths(
+    st_intersects(NGA_wp_geo, wp_functional))) %>%
+  mutate(`wp_nonfunctional` = lengths(
+    st_intersects(NGA_wp_geo, wp_nonfunctional))) %>%
+  mutate(`wp_unknown` = lengths(
+    st_intersects(NGA_wp_geo, wp_unknown)))
+```
+
+### Deriving the Proportion of Functional to Non-Functional Water points
+
+The visualization would be more effective as percentage would give a better story
+
+```{r}
+NGA_wp_count <- NGA_wp_count %>%
+  mutate(pct_functional = wp_functional/total_wp) %>%
+  mutate(pct_nonfunctional = wp_nonfunctional/total_wp)
+```
+
+```{r}
+tm_shape(NGA_wp_count) +
+  tm_fill("pct_functional",
+          n = 10,
+          style = "equal",
+          palette = "Blues",
+          legend.hist = TRUE) +
+  tm_borders(lwd = 0.1,
+             alpha = 1) +
+  tm_layout(main.title = "Rate map of functional water point by LGAs in Osun",
+            legend.outside = TRUE)
+
+```
+
+### Mapping all the water points on the map
+
+```{r}
+tmap_mode('view')
+tm_shape(wp_sf_nga)+
+  tm_dots()
+```
+
+### Deriving the Kernel Density Maps of Functional/Non-Functional Water points
+
+Convert sf dataframes into spatial class
+
+```{r}
+wp_func_spatial_class <- as_Spatial(wp_functional)
+wp_nfunc_spatial_class <- as_Spatial(wp_nonfunctional)
+wp_osun <- as_Spatial(NGA_wp_geo)
+```
+
+#### Check the type to convert to
+
+::: callout-tip
+All are spatial points except wp_osun with is polygon
+:::
+
+```{r}
+wp_func_spatial_class
+```
+
+```{r}
+wp_nfunc_spatial_class
+```
+
+```{r}
+wp_osun
+```
+
+#### Convert into generic sp format
+
+```{r}
+wp_func_sp <- as(wp_func_spatial_class, "SpatialPoints")
+wp_nfunc_sp <- as(wp_nfunc_spatial_class, "SpatialPoints")
+wp_osun_sp <- as(wp_osun, "SpatialPolygons")
+```
+
+#### Convert the generic format into spatstat's ppp format
+
+```{r}
+wp_func_ppp <- as(wp_func_sp, "ppp")
+wp_nfunc_ppp <- as(wp_nfunc_sp, "ppp")
+```
+
+#### Plot Planar Point
+
+```{r}
+plot(wp_func_sp)
+```
+
+#### Summary Statistics
+
+```{r}
+summary(wp_func_ppp)
+```
+
+```{r}
+summary(wp_nfunc_ppp)
+```
+
+Check for duplicated points
+
+```{r}
+any(duplicated(wp_func_ppp))
+```
+
+```{r}
+any(duplicated(wp_nfunc_ppp))
+```
+
+#### Creating the Osun Confines using owin object
+
+```{r}
+osun_owin <- as(wp_osun_sp, "owin")
+```
+
+```{r}
+plot(osun_owin)
+```
+
+#### Combine Functional and Non-Functional Point Events Object and Owin Object
+
+```{r}
+wp_func_ppp_comb = wp_func_ppp[osun_owin]
+wp_nfunc_ppp_comb = wp_nfunc_ppp[osun_owin]
+```
+
+```{r}
+summary(wp_func_ppp_comb)
+```
+
+### Plot functional and non-functional points
+
+```{r}
+par(mfrow=c(1,2))
+plot(wp_func_ppp_comb)
+plot(wp_nfunc_ppp_comb)
+```
+
+#### Deriving the Kernel Density Map
+
+```{r}
+kde_wp_func_map <- density(wp_func_ppp_comb,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="gaussian") 
+kde_wp_nfunc_map <- density(wp_nfunc_ppp_comb,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="gaussian") 
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(kde_wp_func_map)
+plot(kde_wp_nfunc_map)
+```
+
+#### Rescale to KM
+
+```{r}
+wp_func_ppp_comb.km <- rescale(wp_func_ppp_comb, 1000, "km")
+wp_nfunc_ppp_comb.km <- rescale(wp_nfunc_ppp_comb, 1000, "km")
+```
+
+Rerun Density for both functional and non-functional water point:
+
+```{r}
+kde_wp_func_map.bw <- density(wp_func_ppp_comb.km, sigma=bw.diggle, edge=TRUE, kernel="gaussian")
+
+kde_wp_nfunc_map.bw <- density(wp_nfunc_ppp_comb.km, sigma=bw.diggle, edge=TRUE, kernel="gaussian")
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(kde_wp_func_map.bw)
+plot(kde_wp_nfunc_map.bw)
+```
+
+#### Computing Kernel Density Estimation using automatic bandwidth selection method
+
+From our hands-on exercise, we were given the choice of either using *bw.ppl* or *bw.diggle* and *bw.ppl* is recommended specifically if the patterns are comprised of mostly tight clusters. From my observation during the plotting of the water points, there appears to be tight clusters all throughout Osun.
+
+**So, I will go with *bw.ppl* in this case.**
+
+```{r}
+kde_wp_func_map.ppl <- density(wp_func_ppp_comb.km, sigma=bw.ppl, edge=TRUE, kernel="gaussian")
+kde_wp_nfunc_map.ppl <- density(wp_nfunc_ppp_comb.km, sigma=bw.ppl, edge=TRUE, kernel="gaussian")
+```
+
+#### KDE Functional Points
+
+```{r}
+par(mfrow=c(1,2))
+plot(kde_wp_func_map.bw, main = "bw.diggle")
+plot(kde_wp_func_map.ppl, main = "bw.ppl")
+```
+
+#### KDE Non-Functional Points
+
+```{r}
+par(mfrow=c(1,2))
+plot(kde_wp_nfunc_map.bw, main = "bw.diggle")
+plot(kde_wp_nfunc_map.ppl, main = "bw.ppl")
+```
+
+Computing KDE using a fixed bandwidth
+
+```{r}
+kde_wp_func_100 <- density(wp_func_ppp_comb.km, sigma=0.1, edge=TRUE, kernel="gaussian")
+kde_wp_nfunc_100 <- density(wp_nfunc_ppp_comb.km, sigma=0.1, edge=TRUE, kernel="gaussian")
+par(mfrow=c(1,2))
+plot(kde_wp_func_100)
+plot(kde_wp_nfunc_100)
+```
+
+#### Compute KDE using Adaptive Bandwidth
+
+```{r}
+kde_wp_func_adaptive <- adaptive.density(wp_func_ppp_comb.km, method="kernel")
+kde_wp_nfunc_adaptive <- adaptive.density(wp_nfunc_ppp_comb.km, method="kernel")
+plot(kde_wp_func_adaptive)
+```
+
+```{r}
+plot(kde_wp_nfunc_adaptive)
+```
+
+Doesn't look like there is much difference between adaptive/fixed bandwidth in terms of visualization. So we'll stick to using fixed bandwidth.
+
+### Convert KDE output into Grid object
+
+```{r}
+gridded_kde_wp_func_ppl <- as.SpatialGridDataFrame.im(kde_wp_func_map.ppl)
+gridded_kde_wp_nfunc_ppl <- as.SpatialGridDataFrame.im(kde_wp_nfunc_map.ppl)
+spplot(gridded_kde_wp_func_ppl)
+```
+
+```{r}
+spplot(gridded_kde_wp_nfunc_ppl)
+```
+
+### Rasterise Layer so it can be mapped on tmap
+
+```{r}
+kde_wp_func_map_ppl_raster <- raster(gridded_kde_wp_func_ppl)
+kde_wp_nfunc_map_ppl_raster <- raster(gridded_kde_wp_nfunc_ppl)
+```
+
+Check the RASTER
+
+```{r}
+kde_wp_func_map_ppl_raster
+```
+
+```{r}
+kde_wp_nfunc_map_ppl_raster
+```
+
+Assign Nigeria Projection System (ESG: 26392)
+
+```{r}
+projection(kde_wp_func_map_ppl_raster) <- CRS("+init=EPSG:26392")
+projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392")
+```
+
+#### Visualize functional/non-functional water point map output in TMAP:
+
+```{r}
+  tm_basemap("OpenStreetMap") +
+  tm_shape(kde_wp_func_map_ppl_raster) +
+  tm_raster("v") +
+  tm_layout(legend.position = c("right", "bottom"), 
+            frame = FALSE, 
+            main.title="Functional Water Points",
+            main.title.position = "center",
+            main.title.size = 1)
+```
+
+```{r}
+  tm_basemap("OpenStreetMap") +
+  tm_shape(kde_wp_nfunc_map_ppl_raster) +
+  tm_raster("v") +
+  tm_layout(legend.position = c("right", "bottom"), 
+            frame = FALSE, 
+            main.title="Functional Water Points",
+            main.title.position = "center",
+            main.title.size = 1)
+```
+
+### Describe the spatial patterns revealed by the kernel density maps. Highlight the advantage of kernel density map over point map.
+
+\
+
