@@ -123,3 +123,21 @@ In the childcare sense, fixed is better because we know they typically cluster a
 Use L function since that has a clearer interpretation (can maybe display all)
 
 The number of monte carlo simulation we run will depend on our confidence level. (so if run 95 times, our confidence is 95% and 99 is 99%)
+
+**For L estimate:**
+
+The correction parameter is for H correction, but some might take longer to account for the edge. However, this alone cannot derive if the clustering is statistically significant
+
+We run envelop which encompasses all the lines from the simulation
+
+From exercise 5 (2nd order)
+
+Anything within the envelop is statistically insignificant. Within the distance of 480-560 (outside the envelop), we see that is statistically significant and cluster. Below the 0 is no clustering.
+
+All the lines are simulations of a 100 sample. (if we run 99 times).
+
+The black line can be considered alpha-value that is compared to the p-value.
+
+How to inteprete:
+
+-   At 480m distance between the childcare center, we can start to see signs of clustering.

@@ -1,0 +1,32 @@
+---
+title: "In-class Exercise 5"
+author: "Wen Yang"
+date: "6 February 2023"
+format: html
+date-modified: "`r Sys.Date()`"
+number-sections: true
+
+execute:
+  message: true
+  warning: false
+  echo: true
+  eval: true
+  
+editor: visual
+---
+
+Packages
+
+```{r}
+pacman::p_load(tidyverse, tmap, sf, sfdep)
+```
+
+Study Area
+
+```{r}
+studyArea <- st_read(dsn="data", layer="study_area") %>% st_transform(crs=3829)
+```
+
+```{r}
+stores <- st_read(dsn="data", layer="stores") %>% st_transform(crs=3829)
+```

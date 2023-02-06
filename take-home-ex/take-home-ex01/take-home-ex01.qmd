@@ -328,7 +328,9 @@ plot(kde_wp_func_map.ppl, main = "bw.ppl")
 
 #### KDE Non-Functional Points
 
-maybe can stick to adaptive. Pick one to use (fixed or adaptive)
+Maybe can stick to adaptive. Pick one to use (fixed or adaptive)
+
+Though it can be fixed as water point sources are likely fixed to certain areas... (ppl)
 
 ```{r}
 par(mfrow=c(1,2))
