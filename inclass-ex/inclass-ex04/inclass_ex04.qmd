@@ -85,3 +85,41 @@ Cos for points they need x y coordinates
 childcare_ppp <- as(childcare_sp, "ppp")
 childcare_ppp
 ```
+
+Jitter to handle duplicate data
+
+```{r}
+childcare_ppp_jit <- rjitter(childcare_ppp, 
+                             retry=TRUE, 
+                             nsim=1, 
+                             drop=TRUE)
+```
+
+```{r}
+any(duplicated(childcare_ppp_jit))
+```
+
+```{r}
+plot(childcare_ppp_jit)
+```
+
+```{r}
+sg_owin <- as(sg_sp, "owin")
+plot(sg_owin)
+
+```
+
+```{r}
+childcareSG_ppp = childcare_ppp[sg_owin]
+plot(childcareSG_ppp)
+```
+
+Longer the bandwidth, the smoother it is.
+
+If data points are well-distributed/well-defined, then fixed is better, adaptive otherwise
+
+In the childcare sense, fixed is better because we know they typically cluster around residential areas
+
+Use L function since that has a clearer interpretation (can maybe display all)
+
+The number of monte carlo simulation we run will depend on our confidence level. (so if run 95 times, our confidence is 95% and 99 is 99%)

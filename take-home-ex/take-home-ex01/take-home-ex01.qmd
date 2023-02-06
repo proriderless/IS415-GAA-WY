@@ -328,13 +328,15 @@ plot(kde_wp_func_map.ppl, main = "bw.ppl")
 
 #### KDE Non-Functional Points
 
+maybe can stick to adaptive. Pick one to use (fixed or adaptive)
+
 ```{r}
 par(mfrow=c(1,2))
 plot(kde_wp_nfunc_map.bw, main = "bw.diggle")
 plot(kde_wp_nfunc_map.ppl, main = "bw.ppl")
 ```
 
-Computing KDE using a fixed bandwidth
+Computing KDE using a fixed bandwidth (REMOVE THIS ONE)
 
 ```{r}
 kde_wp_func_100 <- density(wp_func_ppp_comb.km, sigma=0.1, edge=TRUE, kernel="gaussian")
@@ -390,8 +392,8 @@ kde_wp_nfunc_map_ppl_raster
 Assign Nigeria Projection System (ESG: 26392)
 
 ```{r}
-projection(kde_wp_func_map_ppl_raster) <- CRS("+init=EPSG:26392")
-projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392")
+projection(kde_wp_func_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
+projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
 ```
 
 #### Visualize functional/non-functional water point map output in TMAP:
