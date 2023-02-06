@@ -30,3 +30,83 @@ studyArea <- st_read(dsn="data", layer="study_area") %>% st_transform(crs=3829)
 ```{r}
 stores <- st_read(dsn="data", layer="stores") %>% st_transform(crs=3829)
 ```
+
+```{r}
+#plot the polygon first
+tmap_mode('view') +
+  tm_shape(studyArea) +
+  tm_polygons() +
+  tm_shape(stores) +
+  tm_dots(col="Name",
+          size=0.01,
+          border.col="black",
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(12,16))
+```
+
+Local colocation quotient
+
+::: callout-tip
+#k-nearest neigbour (adaptive)
+
+#choose 6 is not good, cos there is a chance of equal proportion
+
+#but with include self, it will become odd (6+1), no chance equal proportion
+
+nb -\> list of length is the distance between one point against every other point
+:::
+
+```{r}
+nb <- include_self(
+  st_knn(st_geometry(stores), 6))
+```
+
+```{r}
+wt <- st_kernel_weights(nb,
+                        stores,
+                        "gaussian",
+                        adaptive=TRUE)
+```
+
+```{r}
+FamilyMart <- stores %>%
+  filter(Name == "Family Mart")
+A <- FamilyMart$Name
+```
+
+```{r}
+SevenEleven <- stores %>%
+  filter(Name == "7-Eleven")
+B <- SevenEleven$Name
+```
+
+```{r}
+#A is my target
+#B is my neighbour to see if we colocate
+#Run 50 simulations, will convert to p-value
+#NA is common
+#There are different p-value some over some below 0.05
+LCLQ <- local_colocation(A, B, nb,wt, 49)
+```
+
+```{r}
+#No unique identifier, so cannot left/right join
+#So no sorting, as the sequence is preserved already
+#Stores must be the first to keep the geometry column
+LCLQ_stores <- cbind(stores, LCLQ)
+```
+
+Plot the map
+
+```{r}
+tmap_mode("view")+
+  tm_shape(studyArea) +
+  tm_polygons() +
+  tm_shape(LCLQ_stores) +
+  tm_dots(col="X7.Eleven",
+          size=0.01,
+          border.col="black",
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(12,16))
+#The map below means dot is the target is family mart that is colocated with 7-eleven
+```
