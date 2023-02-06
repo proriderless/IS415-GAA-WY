@@ -39,10 +39,27 @@ mpsz_sf <- st_read(dsn = "data",
                 layer = "MP14_SUBZONE_WEB_PL")
 ```
 
+Notes:
+
+::: callout-tip
+Use tmap_mode('plot') for staticmap
+
+Change alpha of dots to change opacity for dots
+
+Change view as vector
+
+Also, there is an order to the way you display the tmap:
+
+tmap_mode -\> tmap_plot, shape, dots, view
+
+tm_bubbles -\> For proportion
+:::
+
 ```{r}
-tmap_mode('view')
-tm_shape(childcare_sf)+
-  tm_dots()
+tmap_mode('view') + 
+  tm_shape(childcare_sf)+
+  tm_dots(alpha = 0.5)+
+  tm_view(set.zoom.limits = c(11,14))
 ```
 
 #### Convert from Shape File to Spatial Feature File

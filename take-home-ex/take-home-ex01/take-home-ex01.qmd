@@ -398,6 +398,7 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392")
 
 ```{r}
   tm_basemap("OpenStreetMap") +
+  tmap_mode('plot') + 
   tm_shape(kde_wp_func_map_ppl_raster) +
   tm_raster("v") +
   tm_layout(legend.position = c("right", "bottom"), 
@@ -409,6 +410,7 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392")
 
 ```{r}
   tm_basemap("OpenStreetMap") +
+  tmap_mode('plot') + 
   tm_shape(kde_wp_nfunc_map_ppl_raster) +
   tm_raster("v") +
   tm_layout(legend.position = c("right", "bottom"), 
@@ -421,4 +423,3 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392")
 ### Describe the spatial patterns revealed by the kernel density maps. Highlight the advantage of kernel density map over point map.
 
 \
-
