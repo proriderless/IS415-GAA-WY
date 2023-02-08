@@ -19,7 +19,7 @@ Packages are important. Try to use SF, not SP
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the code"
-pacman::p_load(sf, tidyverse, funModeling)
+pacman::p_load(sf, tidyverse, funModeling, tmap)
 ```
 
 ### Loading the file (Convert to the projection)
@@ -189,6 +189,15 @@ ggplot(data = NGA_wp, aes(x = total_wp)) +
   xlab("No. of water points") + 
   ylab("No. of\nLGAs") +
   theme(axis.title.y=element_text(angle=0))
+```
+
+```{r}
+tmap_mode('view') +
+  tm_shape(wp_sf_nga) +
+  tm_dots(col="status_clean",
+          size=0.01,
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(9,16))
 ```
 
 ### Saving the analytic data in rds format

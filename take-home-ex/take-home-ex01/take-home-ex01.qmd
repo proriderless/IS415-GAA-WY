@@ -89,7 +89,8 @@ Need to prepend dplyr because raster has a similar function
 ```{r}
 wp_sf_nga <- wp_sf %>% 
   rename(status_clean = '#status_clean') %>%
-  dplyr::select(status_clean) %>%
+  rename(clean_adm2 = '#clean_adm2') %>%
+  dplyr::select(status_clean, clean_adm2) %>%
   mutate(status_clean = replace_na(
     status_clean, "unknown"))
 
@@ -147,6 +148,9 @@ NGA_wp_count <- NGA_wp_count %>%
   mutate(pct_nonfunctional = wp_nonfunctional/total_wp)
 ```
 
+::: panel-tabset
+## Functional
+
 ```{r}
 tm_shape(NGA_wp_count) +
   tm_fill("pct_functional",
@@ -158,15 +162,33 @@ tm_shape(NGA_wp_count) +
              alpha = 1) +
   tm_layout(main.title = "Rate map of functional water point by LGAs in Osun",
             legend.outside = TRUE)
-
 ```
+
+## Non-Functional
+
+```{r}
+tm_shape(NGA_wp_count) +
+  tm_fill("pct_nonfunctional",
+          n = 10,
+          style = "equal",
+          palette = "Blues",
+          legend.hist = TRUE) +
+  tm_borders(lwd = 0.1,
+             alpha = 1) +
+  tm_layout(main.title = "Rate map of functional water point by LGAs in Osun",
+            legend.outside = TRUE)
+```
+:::
 
 ### Mapping all the water points on the map
 
 ```{r}
-tmap_mode('view')
-tm_shape(wp_sf_nga)+
-  tm_dots()
+tmap_mode('view') +
+  tm_shape(wp_sf_nga) +
+  tm_dots(col="status_clean",
+          size=0.01,
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(9,16))
 ```
 
 ### Deriving the Kernel Density Maps of Functional/Non-Functional Water points
@@ -309,7 +331,7 @@ plot(kde_wp_nfunc_map.bw)
 
 #### Computing Kernel Density Estimation using automatic bandwidth selection method
 
-From our hands-on exercise, we were given the choice of either using *bw.ppl* or *bw.diggle* and *bw.ppl* is recommended specifically if the patterns are comprised of mostly tight clusters. From my observation during the plotting of the water points, there appears to be tight clusters all throughout Osun.
+From our hands-on exercise, we were given the choice of either using *bw.ppl* or *bw.diggle* or adaptive kernel density estimatation method. We were told that *bw.ppl* is recommended specifically if the patterns are comprised of mostly tight clusters and well-distributed, and adaptive density are used if the data points are sparse. From my observation during the plotting of the water points, there appears to be a few tight clusters all throughout Osun and appear to be well-distributed. In lieu of that observation, I will be going with *bw.ppl* algorithm to determine the fixed bandwidth.
 
 **So, I will go with *bw.ppl* in this case.**
 
@@ -321,46 +343,14 @@ kde_wp_nfunc_map.ppl <- density(wp_nfunc_ppp_comb.km, sigma=bw.ppl, edge=TRUE, k
 #### KDE Functional Points
 
 ```{r}
-par(mfrow=c(1,2))
-plot(kde_wp_func_map.bw, main = "bw.diggle")
 plot(kde_wp_func_map.ppl, main = "bw.ppl")
 ```
 
 #### KDE Non-Functional Points
 
-Maybe can stick to adaptive. Pick one to use (fixed or adaptive)
-
-Though it can be fixed as water point sources are likely fixed to certain areas... (ppl)
-
 ```{r}
-par(mfrow=c(1,2))
-plot(kde_wp_nfunc_map.bw, main = "bw.diggle")
 plot(kde_wp_nfunc_map.ppl, main = "bw.ppl")
 ```
-
-Computing KDE using a fixed bandwidth (REMOVE THIS ONE)
-
-```{r}
-kde_wp_func_100 <- density(wp_func_ppp_comb.km, sigma=0.1, edge=TRUE, kernel="gaussian")
-kde_wp_nfunc_100 <- density(wp_nfunc_ppp_comb.km, sigma=0.1, edge=TRUE, kernel="gaussian")
-par(mfrow=c(1,2))
-plot(kde_wp_func_100)
-plot(kde_wp_nfunc_100)
-```
-
-#### Compute KDE using Adaptive Bandwidth
-
-```{r}
-kde_wp_func_adaptive <- adaptive.density(wp_func_ppp_comb.km, method="kernel")
-kde_wp_nfunc_adaptive <- adaptive.density(wp_nfunc_ppp_comb.km, method="kernel")
-plot(kde_wp_func_adaptive)
-```
-
-```{r}
-plot(kde_wp_nfunc_adaptive)
-```
-
-Doesn't look like there is much difference between adaptive/fixed bandwidth in terms of visualization. So we'll stick to using fixed bandwidth.
 
 ### Convert KDE output into Grid object
 
@@ -400,6 +390,9 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
 
 #### Visualize functional/non-functional water point map output in TMAP:
 
+::: panel-tabset
+## Functional Water points
+
 ```{r}
   tm_basemap("OpenStreetMap") +
   tmap_mode('plot') + 
@@ -409,8 +402,11 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
             frame = FALSE, 
             main.title="Functional Water Points",
             main.title.position = "center",
-            main.title.size = 1)
+            main.title.size = 1)+
+  tm_view(set.zoom.limits = c(12,16))
 ```
+
+## Non-Functional Water points
 
 ```{r}
   tm_basemap("OpenStreetMap") +
@@ -419,11 +415,287 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
   tm_raster("v") +
   tm_layout(legend.position = c("right", "bottom"), 
             frame = FALSE, 
-            main.title="Functional Water Points",
+            main.title="Non-Functional Water Points",
             main.title.position = "center",
-            main.title.size = 1)
+            main.title.size = 1)+
+  tm_view(set.zoom.limits = c(12,16))
+```
+:::
+
+### Describe the spatial patterns revealed by the kernel density maps.
+
+From the maps above, we can tell at first glance that the functional water points and non-functional water points are concentrated at a few points. Another interesting point of note are that most of the water point areas, regardless of functioning/non-functioning are situated on the northern side of the map, with one large cluster of non-functional water points at the center of Osun.
+
+### Highlight the advantage of kernel density map over point map.
+
+We will define the point plot of both the functional and non-functional water points to compare visualization.
+
+::: panel-tabset
+## Functional
+
+```{r}
+tmap_mode('view') +
+  tm_shape(wp_functional) +
+  tm_dots(col="status_clean",
+          size=0.01,
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(9,16))
 ```
 
-### Describe the spatial patterns revealed by the kernel density maps. Highlight the advantage of kernel density map over point map.
+## Non-Functional
 
-\
+```{r}
+tmap_mode('view') +
+  tm_shape(NGA_wp_geo) +
+  tm_polygons() +
+  tm_shape(wp_nonfunctional) +
+  tm_dots(col="status_clean",
+          size=0.01,
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(9,16))
+```
+
+## Together
+
+```{r}
+tmap_mode('view') +
+  tm_shape(NGA_wp_geo) +
+  tm_borders() +
+  tm_shape(wp_sf_nga) +
+  tm_dots(col="status_clean",
+          size=0.01,
+          border.lwd=0.5) + 
+  tm_view(set.zoom.limits = c(9,16))
+```
+:::
+
+From one look at the point map, it's not immediately obvious where the clusters are as the water points are generally well-distributed across Osun. It is only after we look at the kernel density map that it becomes obvious and clearer that the functional water points are mostly concentrated on the north west of Osun, with small clusters of non-functional water points scattered throughout. This also supports our earlier exploratory analysis where it's revealed that Ede North and Ejigbo has a higher proportion of functioning water points, and central areas like Ife Central and Ifelodon are lacking functional ones.
+
+From this map, we can prioritise areas that would need to be fixed, and also to investigate why certain LGA's have a higher cluster/proportion of non-functioning water points compared to others.
+
+```{r}
+
+```
+
+### Second Order Spatial Point Patterns Analysis
+
+Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether they are randomly distributed or not.
+
+For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points
+
+**Functioning:**
+
+1.  Ejigbo
+2.  Ede North
+
+**Non-Functioning:**
+
+1.  Ifelodun
+2.  Ife Central
+
+#### Hypothesis:
+
+H0: The distribution of the water points are randomly distributed
+
+H1: The distribution of the water points are not randomly distributed
+
+Confidence Level: 99%; Significance level: 1%/0.01
+
+### Create our Owin Object for all the LGAs
+
+```{r}
+
+ejigbo_area = wp_osun[wp_osun$ADM2_EN == 'Ejigbo',] %>%
+  as('SpatialPolygons') %>%
+  as('owin')
+
+ede_north_area = wp_osun[wp_osun$ADM2_EN == 'Ede North',]%>%
+  as('SpatialPolygons') %>%
+  as('owin')
+
+ifelodun_area = wp_osun[wp_osun$ADM2_EN == 'Ifelodun',]%>%
+  as('SpatialPolygons') %>%
+  as('owin')
+
+ife_central_area = wp_osun[wp_osun$ADM2_EN == 'Ife Central',]%>%
+  as('SpatialPolygons') %>%
+  as('owin')
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(ejigbo_area, main="Ejigbo")
+plot(ede_north_area, main="Ede North")
+plot(ifelodun_area, main="Ifelodun")
+plot(ife_central_area, main="Ife Central")
+```
+
+#### Extract the relevant areas for the functioning/non-functioning water points
+
+```{r}
+#Functioning Water points
+wp_func_ejigbo_ppp = wp_func_ppp[ejigbo_area]
+wp_func_ede_north_ppp = wp_func_ppp[ede_north_area]
+
+#Non-functioning
+wp_nfunc_ifelodun_ppp = wp_nfunc_ppp[ifelodun_area]
+wp_nfunc_ife_central_ppp = wp_nfunc_ppp[ife_central_area]
+```
+
+#### Rescale them
+
+```{r}
+wp_func_ejigbo_ppp.km = rescale(wp_func_ejigbo_ppp, 1000, "km")
+wp_func_ede_north_ppp.km = rescale(wp_func_ede_north_ppp, 1000, "km")
+wp_nfunc_ifelodun_ppp.km = rescale(wp_nfunc_ifelodun_ppp, 1000, "km")
+wp_nfunc_ife_central_ppp.km = rescale(wp_nfunc_ife_central_ppp, 1000, "km")
+```
+
+#### Functioning Water points
+
+```{r}
+par(mfrow=c(1,2))
+plot(wp_func_ejigbo_ppp.km, main="Ejigbo")
+plot(wp_func_ede_north_ppp.km, main="Ede North")
+```
+
+#### Non-functioning Water point
+
+```{r}
+par(mfrow=c(1,2))
+plot(wp_nfunc_ifelodun_ppp.km, main="Ifelodun")
+plot(wp_nfunc_ife_central_ppp.km, main="Ife Central")
+```
+
+### Using the L Function for Functioning Water Points
+
+We will use the L Function, Lest(), to measure the distribution of the spatial point patterns, in this case, our water points. If the lines are outside of the envelop, we can say that it's statistically significant with 99% confidence.
+
+#### Ejigbo Study Area
+
+```{r}
+L_ejigbo = Lest(wp_func_ejigbo_ppp, correction="Ripley")
+plot(L_ejigbo, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+#### Complete Spatial Randomness Test
+
+```{r}
+L_ejigbo.csr <- envelope(wp_func_ejigbo_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+plot(L_ejigbo.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+We can say that the distribution of functional water points are not randomly distributed, as we reject the null hypothesis and since they are above the red line, it means the distribution is geographically clustered.
+
+#### Ede North Study Area:
+
+```{r}
+L_ede_north = Lest(wp_func_ede_north_ppp, correction="Ripley")
+plot(L_ede_north, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+Complete Spatial Randomness Test
+
+```{r}
+L_ede_north.csr <- envelope(wp_func_ede_north_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+plot(L_ede_north.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+Similar results to the Ede North. The clusters of functioning water points are NOT random as we reject the null hypothesis.
+
+Overall results seems to indicate that functioning water points are generally clustered around certain places. This indicates that there might be environmental reasons why the functioning water points are placed at where they are.
+
+### Using the L Function for Non-Functioning Water Points
+
+#### Ifelodun Study Area
+
+```{r}
+L_ifelodun = Lest(wp_nfunc_ifelodun_ppp, correction="Ripley")
+plot(L_ifelodun, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+
+```
+
+**Complete Spatial Randomness Test**
+
+```{r}
+L_ifelodun.csr <- envelope(wp_nfunc_ifelodun_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+plot(L_ifelodun.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+#### Ife Central Study Area
+
+```{r}
+L_ife_central_area = Lest(wp_nfunc_ife_central_ppp, correction="Ripley")
+plot(L_ife_central_area, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+**Complete Spatial Randomness Test**
+
+```{r}
+L_ife_central_area.csr <- envelope(wp_nfunc_ife_central_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+plot(L_ife_central_area.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+From the above results, we can say that the distribution of non-functioning water points are also not random. Which means there might be external reasons why non-functioning water points are clustered at these areas.
+
+### Spatial Correlation Analysis
+
+To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the K-Function. We will applying this over the four states that I have previously discussed. (Ejigbo, Ede North, Ifelodun and Ife Central)
+
+-   H0: The functional and non-functional water points are distributed randomly and spatially independent
+
+-   H1: The functional and non-functional water points are distributed non-random and spatially dependent.
+
+-   Confidence Level: 99%
+
+Null hypothesis will be rejected.
+
+**Recreating the Planar Point with both functional and non-functional water points**
+
+```{r}
+wp_ppp <- as_Spatial(wp_sf_nga) %>%
+  as("SpatialPoints") %>%
+  as("ppp")
+```
+
+```{r}
+wp_ppp = wp_ppp[osun_owin]
+```
+
+```{r}
+K_wp_ppp = Kest(wp_ppp, correction = "Ripley")
+plot(K_wp_ppp, . -r ~ r, ylab= "K(d)-r", xlab = "d(m)")
+```
+
+K-Cross for both functional and non-functional water points
+
+```{r}
+ejigbo_wp_ppp = wp_ppp[ejigbo_area]
+plot(ejigbo_wp_ppp, main="Test", which.marks = "status_clean")
+```
+
+```{r}
+Lcross_ejigbo.csr <- envelope(ejigbo_wp_ppp, 
+                              i="Functional", 
+                              j="Non-Functional",
+                              correction="border",
+                              nsim=99)
+envelop()
+plot(Lcross_ejigbo.csr, . -r ~ r, ylab= "K(d)-r", xlab = "d(m)")
+```
