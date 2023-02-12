@@ -238,7 +238,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `MP14_SUBZONE_WEB_PL' from data source 
-  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\lessons\lesson2\data\geospatial' 
+  `D:\Documents\IS415-GAA-WY\lessons\lesson2\data\geospatial' 
   using driver `ESRI Shapefile'
 Simple feature collection with 323 features and 15 fields
 Geometry type: MULTIPOLYGON
@@ -249,7 +249,7 @@ Projected CRS: SVY21</code></pre>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cyclingpath <span class="ot">=</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial/CyclingPath_Jun2022"</span>, <span class="at">layer=</span> <span class="st">"CyclingPathGazette"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `CyclingPathGazette' from data source 
-  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\lessons\lesson2\data\geospatial\CyclingPath_Jun2022' 
+  `D:\Documents\IS415-GAA-WY\lessons\lesson2\data\geospatial\CyclingPath_Jun2022' 
   using driver `ESRI Shapefile'
 Simple feature collection with 2248 features and 2 fields
 Geometry type: MULTILINESTRING
@@ -260,7 +260,7 @@ Projected CRS: SVY21</code></pre>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>preschool <span class="ot">=</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/preschools-location.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `PRESCHOOLS_LOCATION' from data source 
-  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\lessons\lesson2\data\geospatial\preschools-location.kml' 
+  `D:\Documents\IS415-GAA-WY\lessons\lesson2\data\geospatial\preschools-location.kml' 
   using driver `KML'
 Simple feature collection with 1925 features and 2 fields
 Geometry type: POINT

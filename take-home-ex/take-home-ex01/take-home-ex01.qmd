@@ -473,15 +473,11 @@ From one look at the point map, it's not immediately obvious where the clusters 
 
 From this map, we can prioritise areas that would need to be fixed, and also to investigate why certain LGA's have a higher cluster/proportion of non-functioning water points compared to others.
 
-```{r}
-
-```
-
 ### Second Order Spatial Point Patterns Analysis
 
-Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether they are randomly distributed or not.
+Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether they are clustered or not.
 
-For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points
+For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points. We will also conduct on the G function across the entire state of Osun to confirm that all (both functioning and non-functioning) water point's cluster are statistically significant.
 
 **Functioning:**
 
@@ -495,11 +491,11 @@ For this, I have chosen two states each as identified in the kernel density map 
 
 #### Hypothesis:
 
-H0: The distribution of the water points are randomly distributed
+H0: The distribution of the water points are random and evenly spaced
 
-H1: The distribution of the water points are not randomly distributed
+H1: The distribution of the water points are not randomly distributed and clustered
 
-Confidence Level: 99%; Significance level: 1%/0.01
+Confidence Level: 95%; Significance level: 5%/0.05
 
 ### Create our Owin Object for all the LGAs
 
@@ -567,106 +563,91 @@ plot(wp_nfunc_ifelodun_ppp.km, main="Ifelodun")
 plot(wp_nfunc_ife_central_ppp.km, main="Ife Central")
 ```
 
-### Using the L Function for Functioning Water Points
+### Using the G Function for Functioning Water Points
 
-We will use the L Function, Lest(), to measure the distribution of the spatial point patterns, in this case, our water points. If the lines are outside of the envelop, we can say that it's statistically significant with 99% confidence.
+We will use the G Function, Gest(), to measure the distribution of the spatial point patterns, in this case, our water points. If the lines are outside of the envelop, we can say that it's statistically significant with 95% confidence.
 
 #### Ejigbo Study Area
 
 ```{r}
-L_ejigbo = Lest(wp_func_ejigbo_ppp, correction="Ripley")
-plot(L_ejigbo, . -r ~ r, 
-     ylab= "L(d)-r", xlab = "d(m)")
+G_ejigbo = Gest(wp_func_ejigbo_ppp.km, correction="best")
+plot(G_ejigbo)
 ```
 
 #### Complete Spatial Randomness Test
 
 ```{r}
-L_ejigbo.csr <- envelope(wp_func_ejigbo_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+G_ejigbo.csr <- envelope(wp_func_ejigbo_ppp.km, Gest, nsim = 39)
 ```
 
 ```{r}
-plot(L_ejigbo.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+plot(G_ejigbo.csr)
 ```
 
-We can say that the distribution of functional water points are not randomly distributed, as we reject the null hypothesis and since they are above the red line, it means the distribution is geographically clustered.
+We can say that the distribution of functional water points are clustered as they increase rapidly within a short distance of 0.5km and that it's statistically significant as it lies outside the envelope.
 
 #### Ede North Study Area:
 
 ```{r}
-L_ede_north = Lest(wp_func_ede_north_ppp, correction="Ripley")
-plot(L_ede_north, . -r ~ r, 
-     ylab= "L(d)-r", xlab = "d(m)")
-```
-
-Complete Spatial Randomness Test
-
-```{r}
-L_ede_north.csr <- envelope(wp_func_ede_north_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
-```
-
-```{r}
-plot(L_ede_north.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
-```
-
-Similar results to the Ede North. The clusters of functioning water points are NOT random as we reject the null hypothesis.
-
-Overall results seems to indicate that functioning water points are generally clustered around certain places. This indicates that there might be environmental reasons why the functioning water points are placed at where they are.
-
-### Using the L Function for Non-Functioning Water Points
-
-#### Ifelodun Study Area
-
-```{r}
-L_ifelodun = Lest(wp_nfunc_ifelodun_ppp, correction="Ripley")
-plot(L_ifelodun, . -r ~ r, 
-     ylab= "L(d)-r", xlab = "d(m)")
-
+G_ede_north = Gest(wp_func_ede_north_ppp.km, correction="best")
+plot(G_ede_north)
 ```
 
 **Complete Spatial Randomness Test**
 
 ```{r}
-L_ifelodun.csr <- envelope(wp_nfunc_ifelodun_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+G_ede_north.csr <- envelope(wp_func_ede_north_ppp.km, Gest, nsim = 39)
 ```
 
 ```{r}
-plot(L_ifelodun.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+plot(G_ede_north.csr)
+```
+
+Similar results to the Ede North. The functioning water points are all clustered and statistically significant. We reject the null hypothesis that they are randomly distributed and evenly spaced.
+
+Overall results seems to indicate that functioning water points are generally clustered around certain places. This indicates that there might be practical/geographical reasons why the functioning water points are placed at where they are.
+
+### Using the G Function for Non-Functioning Water Points
+
+#### Ifelodun Study Area
+
+```{r}
+G_ifelodun = Gest(wp_nfunc_ifelodun_ppp.km, correction="best")
+plot(G_ifelodun)
+```
+
+**Complete Spatial Randomness Test**
+
+```{r}
+G_ifelodun.csr <- envelope(wp_nfunc_ifelodun_ppp.km, Gest, nsim = 39)
+```
+
+```{r}
+plot(G_ifelodun.csr)
 ```
 
 #### Ife Central Study Area
 
 ```{r}
-L_ife_central_area = Lest(wp_nfunc_ife_central_ppp, correction="Ripley")
-plot(L_ife_central_area, . -r ~ r, 
-     ylab= "L(d)-r", xlab = "d(m)")
+G_ife_central_area = Gest(wp_nfunc_ife_central_ppp.km, correction="best")
+plot(G_ife_central_area)
 ```
 
 **Complete Spatial Randomness Test**
 
 ```{r}
-L_ife_central_area.csr <- envelope(wp_nfunc_ife_central_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+G_ife_central_area.csr <- envelope(wp_nfunc_ife_central_ppp.km, Gest, nsim = 39)
 ```
 
 ```{r}
-plot(L_ife_central_area.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+plot(G_ife_central_area.csr)
 ```
 
-From the above results, we can say that the distribution of non-functioning water points are also not random. Which means there might be external reasons why non-functioning water points are clustered at these areas.
+From the above results, we can say that the distribution of non-functioning water points are also clustered and not randomly distributed. Which means there might be external reasons why non-functioning water points are clustered at these areas. We reject the null hypothesis that they are randomly distributed and evenly spaced.
 
-### Spatial Correlation Analysis
+### Running on the entire Osun State by including the Functioning and Non-functioning Water Points:
 
-To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the K-Function. We will applying this over the four states that I have previously discussed. (Ejigbo, Ede North, Ifelodun and Ife Central)
-
--   H0: The functional and non-functional water points are distributed randomly and spatially independent
-
--   H1: The functional and non-functional water points are distributed non-random and spatially dependent.
-
--   Confidence Level: 99%
-
-Null hypothesis will be rejected.
-
-**Recreating the Planar Point with both functional and non-functional water points**
+#### Creating the PPP and Owin object
 
 ```{r}
 wp_ppp <- as_Spatial(wp_sf_nga) %>%
@@ -676,26 +657,97 @@ wp_ppp <- as_Spatial(wp_sf_nga) %>%
 
 ```{r}
 wp_ppp = wp_ppp[osun_owin]
+wp_ppp.km = rescale(wp_ppp, 1000, "km")
+```
+
+We'll now perform the L Function across the entire Osun state to confirm our hypothesis that the
+
+```{r}
+G_osun_state = Gest(wp_ppp.km, correction="best")
+```
+
+**Plot**
+
+```{r}
+plot(G_osun_state)
 ```
 
 ```{r}
-K_wp_ppp = Kest(wp_ppp, correction = "Ripley")
-plot(K_wp_ppp, . -r ~ r, ylab= "K(d)-r", xlab = "d(m)")
+G_osun_state.csr <- envelope(wp_ppp.km, Gest, nsim = 39)
 ```
 
-K-Cross for both functional and non-functional water points
-
-```{r}
-ejigbo_wp_ppp = wp_ppp[ejigbo_area]
-plot(ejigbo_wp_ppp, main="Test", which.marks = "status_clean")
-```
+**Plot the Envelop**
 
 ```{r}
-Lcross_ejigbo.csr <- envelope(ejigbo_wp_ppp, 
-                              i="Functional", 
-                              j="Non-Functional",
-                              correction="border",
-                              nsim=99)
-envelop()
-plot(Lcross_ejigbo.csr, . -r ~ r, ylab= "K(d)-r", xlab = "d(m)")
+plot(G_osun_state.csr)
 ```
+
+#### G-Function on Functioning Water Points
+
+```{r}
+G_osun_state_func.csr <- envelope(wp_func_ppp_comb.km, Gest, nsim = 39)
+```
+
+```{r}
+plot(G_osun_state_func.csr)
+```
+
+#### G-Function on Non-Functioning Water Points
+
+```{r}
+G_osun_state_nfunc.csr <- envelope(wp_nfunc_ppp_comb.km, Gest, nsim = 39)
+```
+
+```{r}
+#| eval: false
+plot(G_osun_state_nfunc.csr)
+```
+
+From the above analysis we can say for certain that all the water points in Osun state are clustered and statistically significant as we reject the null hypothesis that they are randomly and evenly distributed. Again, the reason why this could be the case is the same as above, in that there could potentially be practical/geographical reasons why the water points are placed there.
+
+Reasons could be there are natural water sources such as rivers, quarries and reservoirs at these areas or these areas are heavily populated with people, and the water points are built close to residential areas.
+
+### Spatial Correlation Analysis
+
+To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the L-Function for pair correlation analysis. We will applying this over the entire Osun state.
+
+-   H0: The functional and non-functional water points are distributed randomly and spatially independent
+
+-   H1: The functional and non-functional water points are distributed non-random and spatially dependent.
+
+-   Confidence Level: 95%
+
+Null hypothesis will be rejected.
+
+### **Run the L-Function on Osun State:**
+
+We'll now perform the L Function across the entire Osun state using the PPP and owin object we've created earlier.
+
+```{r}
+#| eval: false
+L_osun_state = Lest(wp_ppp.km, correction="Ripley")
+plot(L_osun_state, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(km)")
+```
+
+![](Lfunction_osun_km.png)
+
+#### Complete Spatial Randomness Test
+
+```{r}
+#| eval: false
+L_osun_state.csr <- envelope(wp_ppp.km, Lest, nsim = 39, rank = 1, glocal=TRUE)
+```
+
+**Plot the Envelop**
+
+```{r}
+#| eval: false
+plot(L_osun_state.csr, . - r ~ r, xlab="d(km)", ylab="L(d)-r")
+```
+
+![](95simLFunction.png)
+
+From the combined functional and non-functional water points. We can say with statistical certainty that the functional and non-functional points are clustered close to each other, as from the graph the distance is so small that it can't even be seen and are spatially dependent on each other. Therefore we reject the null hypothesis that the water points are distributed randomly and spatially independent from each other.
+
+This finding ties in with the earlier cluster analysis using the G-Function that there might be practical/geographical reasons why they are spatially dependent and clustered in certain areas. Reasons can include having water points close to residential areas or close to natural water sources such as rivers, quarries or reservoirs.
