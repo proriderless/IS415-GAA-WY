@@ -1,7 +1,8 @@
 ---
 title: "Take-home Exercise 1"
 date: "30 January 2023"
-date-modified: "`r Sys.Date()`"
+date-modified: "`12 February 2023`"
+author: "Tan Wen Yang"
 execute: 
   echo: true
   eval: true
@@ -9,13 +10,24 @@ execute:
 editor: visual
 ---
 
-### Load all the relevant packages
+### 1.0 Introduction
+
+This analysis aims to take a look at all the functional and non-functional water points in Osun State, Nigeria. By looking at the location of the functional and non-functional water points, we will be able to determine which clusters require immediate rehabilitation. We will be perform three parts: Exploratory analysis, Second order spatial analysis and Spatial Correlation Analysis among the functional and non-functional water points.
+
+### 2.0 Load all the relevant packages
 
 ```{r}
 pacman::p_load(sf, tmap, tidyverse, maptools, raster, spatstat, tmap, funModeling)
 ```
 
-### Load the Geospatial data from Humanitarian Data Exchange
+### 3.0 Load the Geospatial data from Humanitarian Data Exchange
+
+**Data Needed:**
+
+| Dataset                                 | Source                                                                                      |
+|-----------------------------------------|---------------------------------------------------------------------------------------------|
+| WPdx+ (Aspatial)                        | https://data.waterpointdata.org/dataset/Water-Point-Data-Exchange-Plus-WPdx-/eqje-vguj/data |
+| Humanitarian Data Exchange (Geospatial) | https://data.humdata.org/                                                                   |
 
 We filter out everything else that is unnecessary outside of Osun
 
@@ -28,7 +40,7 @@ NGA_wp_geo <- st_read(dsn = "data/geospatial",
 From the above, we can tell that Nigeria is currently in WGS84
 :::
 
-### Get information from Nigeria -\> OSUN state only
+### 4.0 Get information from Nigeria -\> OSUN state only
 
 ::: callout-note
 For our analysis, we are only looking for Osun state, so we'll filter out unnecessary states at this stage
@@ -39,7 +51,7 @@ nga_wp_as <- read_csv("data/aspatial/nga_wp.csv") %>%
   filter(`#clean_country_name` == "Nigeria", `#clean_adm1` == "Osun")
 ```
 
-### Check for duplicated rows
+#### 4.1 Check for duplicated rows
 
 ```{r}
 NGA_wp_geo$ADM2_EN[duplicated(NGA_wp_geo$ADM2_EN)==TRUE]
@@ -49,7 +61,7 @@ NGA_wp_geo$ADM2_EN[duplicated(NGA_wp_geo$ADM2_EN)==TRUE]
 There are no duplicate rows, as we have filtered out only Osun States
 :::
 
-### Convert water point data into sf point features
+#### 4.2 Convert water point data into sf point features
 
 We need to convert the aspatial data into an sf dataframe
 
@@ -60,7 +72,7 @@ nga_wp_as$Geometry = st_as_sfc(nga_wp_as$`New Georeferenced Column`)
 nga_wp_as
 ```
 
-### Convert into table into sf object using the original wgs 84 coordinate system
+#### 4.3 Convert into table into sf object using the original wgs 84 coordinate system
 
 ```{r}
 wp_sf <- st_sf(nga_wp_as, crs=4326)
@@ -73,7 +85,7 @@ wp_sf <- wp_sf %>%
   st_transform(crs = 26392)
 ```
 
-### Data Wrangling and Plotting of Water Point Data
+### 5.0 Data Wrangling and Plotting of Water Point Data
 
 Considering that we are mapping out the functional and non-functional water points, we will check the number of status clean and non status clean.
 
@@ -82,7 +94,7 @@ freq(data = wp_sf,
      input = '#status_clean')
 ```
 
-#### Rename column name from #status clean to status_clean and replace na with 'unknown' tag
+#### 5.1 Rename column name from #status clean to status_clean and replace na with 'unknown' tag
 
 Need to prepend dplyr because raster has a similar function
 
@@ -96,7 +108,7 @@ wp_sf_nga <- wp_sf %>%
 
 ```
 
-### Extract functional and non-functional water points
+#### 5.2 Extract functional and non-functional water points
 
 ```{r}
 wp_functional <- wp_sf_nga %>%
@@ -117,14 +129,14 @@ wp_unknown <- wp_sf_nga %>%
   filter(status_clean == "unknown")
 ```
 
-### Remove all unused or unneeded columns:
+#### 5.3 Remove all unused or unneeded columns:
 
 ```{r}
 NGA_wp_geo <- NGA_wp_geo %>%
   dplyr::select(c(3:4, 8:9, ))
 ```
 
-### Performing Point-in-Polygon count
+#### 5.4 Performing Point-in-Polygon count
 
 ```{r}
 NGA_wp_count <- NGA_wp_geo %>% 
@@ -138,9 +150,9 @@ NGA_wp_count <- NGA_wp_geo %>%
     st_intersects(NGA_wp_geo, wp_unknown)))
 ```
 
-### Deriving the Proportion of Functional to Non-Functional Water points
+### 6.0 Deriving the Proportion of Functional to Non-Functional Water points
 
-The visualization would be more effective as percentage would give a better story
+The visualization would be more effective as percentage would give a better story as to how many functional water points there are compared to non-functional and vice-versa. This can also be used as an anchor for our comparison later with our KDE maps and second-order spatial analysis.
 
 ```{r}
 NGA_wp_count <- NGA_wp_count %>%
@@ -149,7 +161,7 @@ NGA_wp_count <- NGA_wp_count %>%
 ```
 
 ::: panel-tabset
-## Functional
+#### Functional
 
 ```{r}
 tm_shape(NGA_wp_count) +
@@ -164,7 +176,7 @@ tm_shape(NGA_wp_count) +
             legend.outside = TRUE)
 ```
 
-## Non-Functional
+#### Non-Functional
 
 ```{r}
 tm_shape(NGA_wp_count) +
@@ -180,7 +192,7 @@ tm_shape(NGA_wp_count) +
 ```
 :::
 
-### Mapping all the water points on the map
+#### 6.1 Mapping all the water points on the map
 
 ```{r}
 tmap_mode('view') +
@@ -191,7 +203,7 @@ tmap_mode('view') +
   tm_view(set.zoom.limits = c(9,16))
 ```
 
-### Deriving the Kernel Density Maps of Functional/Non-Functional Water points
+### 7.0 Deriving the Kernel Density Maps of Functional/Non-Functional Water points
 
 Convert sf dataframes into spatial class
 
@@ -201,7 +213,7 @@ wp_nfunc_spatial_class <- as_Spatial(wp_nonfunctional)
 wp_osun <- as_Spatial(NGA_wp_geo)
 ```
 
-#### Check the type to convert to
+#### 7.1 Check the type to convert to
 
 ::: callout-tip
 All are spatial points except wp_osun with is polygon
@@ -219,7 +231,7 @@ wp_nfunc_spatial_class
 wp_osun
 ```
 
-#### Convert into generic sp format
+#### 7.2 Convert into generic sp format
 
 ```{r}
 wp_func_sp <- as(wp_func_spatial_class, "SpatialPoints")
@@ -227,20 +239,20 @@ wp_nfunc_sp <- as(wp_nfunc_spatial_class, "SpatialPoints")
 wp_osun_sp <- as(wp_osun, "SpatialPolygons")
 ```
 
-#### Convert the generic format into spatstat's ppp format
+#### 7.3 Convert the generic format into spatstat's ppp format
 
 ```{r}
 wp_func_ppp <- as(wp_func_sp, "ppp")
 wp_nfunc_ppp <- as(wp_nfunc_sp, "ppp")
 ```
 
-#### Plot Planar Point
+#### 7.4 Plot Planar Point
 
 ```{r}
 plot(wp_func_sp)
 ```
 
-#### Summary Statistics
+#### 7.5 Summary Statistics
 
 ```{r}
 summary(wp_func_ppp)
@@ -250,7 +262,7 @@ summary(wp_func_ppp)
 summary(wp_nfunc_ppp)
 ```
 
-Check for duplicated points
+**Check for duplicated points**
 
 ```{r}
 any(duplicated(wp_func_ppp))
@@ -260,7 +272,9 @@ any(duplicated(wp_func_ppp))
 any(duplicated(wp_nfunc_ppp))
 ```
 
-#### Creating the Osun Confines using owin object
+No duplicate points identified.
+
+#### 7.6 Creating the Osun Confines using owin object
 
 ```{r}
 osun_owin <- as(wp_osun_sp, "owin")
@@ -270,7 +284,7 @@ osun_owin <- as(wp_osun_sp, "owin")
 plot(osun_owin)
 ```
 
-#### Combine Functional and Non-Functional Point Events Object and Owin Object
+#### 7.7 Combine Functional and Non-Functional Point Events Object and Owin Object
 
 ```{r}
 wp_func_ppp_comb = wp_func_ppp[osun_owin]
@@ -281,7 +295,7 @@ wp_nfunc_ppp_comb = wp_nfunc_ppp[osun_owin]
 summary(wp_func_ppp_comb)
 ```
 
-### Plot functional and non-functional points
+### 8.0 Plot functional and non-functional points
 
 ```{r}
 par(mfrow=c(1,2))
@@ -289,7 +303,7 @@ plot(wp_func_ppp_comb)
 plot(wp_nfunc_ppp_comb)
 ```
 
-#### Deriving the Kernel Density Map
+#### 8.1 Deriving the Kernel Density Map
 
 ```{r}
 kde_wp_func_map <- density(wp_func_ppp_comb,
@@ -308,14 +322,14 @@ plot(kde_wp_func_map)
 plot(kde_wp_nfunc_map)
 ```
 
-#### Rescale to KM
+#### 8.2 Rescale to KM
 
 ```{r}
 wp_func_ppp_comb.km <- rescale(wp_func_ppp_comb, 1000, "km")
 wp_nfunc_ppp_comb.km <- rescale(wp_nfunc_ppp_comb, 1000, "km")
 ```
 
-Rerun Density for both functional and non-functional water point:
+#### **8.3 Rerun Density for both functional and non-functional water point:**
 
 ```{r}
 kde_wp_func_map.bw <- density(wp_func_ppp_comb.km, sigma=bw.diggle, edge=TRUE, kernel="gaussian")
@@ -329,7 +343,7 @@ plot(kde_wp_func_map.bw)
 plot(kde_wp_nfunc_map.bw)
 ```
 
-#### Computing Kernel Density Estimation using automatic bandwidth selection method
+#### 8.4 Computing Kernel Density Estimation using automatic bandwidth selection method
 
 From our hands-on exercise, we were given the choice of either using *bw.ppl* or *bw.diggle* or adaptive kernel density estimatation method. We were told that *bw.ppl* is recommended specifically if the patterns are comprised of mostly tight clusters and well-distributed, and adaptive density are used if the data points are sparse. From my observation during the plotting of the water points, there appears to be a few tight clusters all throughout Osun and appear to be well-distributed. In lieu of that observation, I will be going with *bw.ppl* algorithm to determine the fixed bandwidth.
 
@@ -340,19 +354,19 @@ kde_wp_func_map.ppl <- density(wp_func_ppp_comb.km, sigma=bw.ppl, edge=TRUE, ker
 kde_wp_nfunc_map.ppl <- density(wp_nfunc_ppp_comb.km, sigma=bw.ppl, edge=TRUE, kernel="gaussian")
 ```
 
-#### KDE Functional Points
+#### 8.5 KDE Functional Points
 
 ```{r}
 plot(kde_wp_func_map.ppl, main = "bw.ppl")
 ```
 
-#### KDE Non-Functional Points
+#### 8.6 KDE Non-Functional Points
 
 ```{r}
 plot(kde_wp_nfunc_map.ppl, main = "bw.ppl")
 ```
 
-### Convert KDE output into Grid object
+#### 8.7 Convert KDE output into Grid object
 
 ```{r}
 gridded_kde_wp_func_ppl <- as.SpatialGridDataFrame.im(kde_wp_func_map.ppl)
@@ -364,14 +378,14 @@ spplot(gridded_kde_wp_func_ppl)
 spplot(gridded_kde_wp_nfunc_ppl)
 ```
 
-### Rasterise Layer so it can be mapped on tmap
+#### 8.8 Rasterise Layer so it can be mapped on tmap
 
 ```{r}
 kde_wp_func_map_ppl_raster <- raster(gridded_kde_wp_func_ppl)
 kde_wp_nfunc_map_ppl_raster <- raster(gridded_kde_wp_nfunc_ppl)
 ```
 
-Check the RASTER
+**Check the RASTER**
 
 ```{r}
 kde_wp_func_map_ppl_raster
@@ -381,14 +395,14 @@ kde_wp_func_map_ppl_raster
 kde_wp_nfunc_map_ppl_raster
 ```
 
-Assign Nigeria Projection System (ESG: 26392)
+**Assign Nigeria Projection System (ESG: 26392)**
 
 ```{r}
 projection(kde_wp_func_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
 projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
 ```
 
-#### Visualize functional/non-functional water point map output in TMAP:
+#### 8.9 Visualize functional/non-functional water point map output in TMAP:
 
 ::: panel-tabset
 ## Functional Water points
@@ -422,11 +436,13 @@ projection(kde_wp_nfunc_map_ppl_raster) <- CRS("+init=EPSG:26392 +units=km")
 ```
 :::
 
-### Describe the spatial patterns revealed by the kernel density maps.
+### 10.0 Describe the spatial patterns revealed by the kernel density maps.
 
 From the maps above, we can tell at first glance that the functional water points and non-functional water points are concentrated at a few points. Another interesting point of note are that most of the water point areas, regardless of functioning/non-functioning are situated on the northern side of the map, with one large cluster of non-functional water points at the center of Osun.
 
-### Highlight the advantage of kernel density map over point map.
+The last observation is there are more clusters of non-functioning water points compared to functioning ones.
+
+### 11.0 Highlight the advantage of kernel density map over point map.
 
 We will define the point plot of both the functional and non-functional water points to compare visualization.
 
@@ -473,9 +489,9 @@ From one look at the point map, it's not immediately obvious where the clusters 
 
 From this map, we can prioritise areas that would need to be fixed, and also to investigate why certain LGA's have a higher cluster/proportion of non-functioning water points compared to others.
 
-### Second Order Spatial Point Patterns Analysis
+### 11.0 Second Order Spatial Point Patterns Analysis
 
-Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether they are clustered or not.
+Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether their clusters are statistically significant or not.
 
 For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points. We will also conduct on the G function across the entire state of Osun to confirm that all (both functioning and non-functioning) water point's cluster are statistically significant.
 
@@ -497,7 +513,7 @@ H1: The distribution of the water points are not randomly distributed and cluste
 
 Confidence Level: 95%; Significance level: 5%/0.05
 
-### Create our Owin Object for all the LGAs
+### 12.0 Create our Owin Object for all the LGAs
 
 ```{r}
 
@@ -526,7 +542,7 @@ plot(ifelodun_area, main="Ifelodun")
 plot(ife_central_area, main="Ife Central")
 ```
 
-#### Extract the relevant areas for the functioning/non-functioning water points
+#### 12.1 Extract the relevant areas for the functioning/non-functioning water points
 
 ```{r}
 #Functioning Water points
@@ -538,7 +554,7 @@ wp_nfunc_ifelodun_ppp = wp_nfunc_ppp[ifelodun_area]
 wp_nfunc_ife_central_ppp = wp_nfunc_ppp[ife_central_area]
 ```
 
-#### Rescale them
+#### 12.2 Rescale them
 
 ```{r}
 wp_func_ejigbo_ppp.km = rescale(wp_func_ejigbo_ppp, 1000, "km")
@@ -547,7 +563,7 @@ wp_nfunc_ifelodun_ppp.km = rescale(wp_nfunc_ifelodun_ppp, 1000, "km")
 wp_nfunc_ife_central_ppp.km = rescale(wp_nfunc_ife_central_ppp, 1000, "km")
 ```
 
-#### Functioning Water points
+#### 12.3 Functioning Water points
 
 ```{r}
 par(mfrow=c(1,2))
@@ -555,7 +571,7 @@ plot(wp_func_ejigbo_ppp.km, main="Ejigbo")
 plot(wp_func_ede_north_ppp.km, main="Ede North")
 ```
 
-#### Non-functioning Water point
+#### 12.4 Non-functioning Water point
 
 ```{r}
 par(mfrow=c(1,2))
@@ -563,18 +579,18 @@ plot(wp_nfunc_ifelodun_ppp.km, main="Ifelodun")
 plot(wp_nfunc_ife_central_ppp.km, main="Ife Central")
 ```
 
-### Using the G Function for Functioning Water Points
+### 13.0 Using the G Function for Functioning Water Points
 
 We will use the G Function, Gest(), to measure the distribution of the spatial point patterns, in this case, our water points. If the lines are outside of the envelop, we can say that it's statistically significant with 95% confidence.
 
-#### Ejigbo Study Area
+#### 13.1 Ejigbo Study Area
 
 ```{r}
 G_ejigbo = Gest(wp_func_ejigbo_ppp.km, correction="best")
 plot(G_ejigbo)
 ```
 
-#### Complete Spatial Randomness Test
+#### 13.2 Complete Spatial Randomness Test
 
 ```{r}
 G_ejigbo.csr <- envelope(wp_func_ejigbo_ppp.km, Gest, nsim = 39)
@@ -586,14 +602,14 @@ plot(G_ejigbo.csr)
 
 We can say that the distribution of functional water points are clustered as they increase rapidly within a short distance of 0.5km and that it's statistically significant as it lies outside the envelope.
 
-#### Ede North Study Area:
+#### 13.3 Ede North Study Area:
 
 ```{r}
 G_ede_north = Gest(wp_func_ede_north_ppp.km, correction="best")
 plot(G_ede_north)
 ```
 
-**Complete Spatial Randomness Test**
+#### **13.4 Complete Spatial Randomness Test**
 
 ```{r}
 G_ede_north.csr <- envelope(wp_func_ede_north_ppp.km, Gest, nsim = 39)
@@ -607,16 +623,16 @@ Similar results to the Ede North. The functioning water points are all clustered
 
 Overall results seems to indicate that functioning water points are generally clustered around certain places. This indicates that there might be practical/geographical reasons why the functioning water points are placed at where they are.
 
-### Using the G Function for Non-Functioning Water Points
+### 14.0 Using the G Function for Non-Functioning Water Points
 
-#### Ifelodun Study Area
+#### 14.1 Ifelodun Study Area
 
 ```{r}
 G_ifelodun = Gest(wp_nfunc_ifelodun_ppp.km, correction="best")
 plot(G_ifelodun)
 ```
 
-**Complete Spatial Randomness Test**
+#### **14.2 Complete Spatial Randomness Test**
 
 ```{r}
 G_ifelodun.csr <- envelope(wp_nfunc_ifelodun_ppp.km, Gest, nsim = 39)
@@ -626,14 +642,14 @@ G_ifelodun.csr <- envelope(wp_nfunc_ifelodun_ppp.km, Gest, nsim = 39)
 plot(G_ifelodun.csr)
 ```
 
-#### Ife Central Study Area
+#### 14.3 Ife Central Study Area
 
 ```{r}
 G_ife_central_area = Gest(wp_nfunc_ife_central_ppp.km, correction="best")
 plot(G_ife_central_area)
 ```
 
-**Complete Spatial Randomness Test**
+#### **14.4 Complete Spatial Randomness Test**
 
 ```{r}
 G_ife_central_area.csr <- envelope(wp_nfunc_ife_central_ppp.km, Gest, nsim = 39)
@@ -645,9 +661,9 @@ plot(G_ife_central_area.csr)
 
 From the above results, we can say that the distribution of non-functioning water points are also clustered and not randomly distributed. Which means there might be external reasons why non-functioning water points are clustered at these areas. We reject the null hypothesis that they are randomly distributed and evenly spaced.
 
-### Running on the entire Osun State by including the Functioning and Non-functioning Water Points:
+### 15.0 Running on the entire Osun State by including the Functioning and Non-functioning Water Points:
 
-#### Creating the PPP and Owin object
+#### 15.1 Creating the PPP and Owin object
 
 ```{r}
 wp_ppp <- as_Spatial(wp_sf_nga) %>%
@@ -666,7 +682,7 @@ We'll now perform the L Function across the entire Osun state to confirm our hyp
 G_osun_state = Gest(wp_ppp.km, correction="best")
 ```
 
-**Plot**
+#### **15.2 Plot**
 
 ```{r}
 plot(G_osun_state)
@@ -676,13 +692,13 @@ plot(G_osun_state)
 G_osun_state.csr <- envelope(wp_ppp.km, Gest, nsim = 39)
 ```
 
-**Plot the Envelop**
+**15.3 Plot the Envelop**
 
 ```{r}
 plot(G_osun_state.csr)
 ```
 
-#### G-Function on Functioning Water Points
+#### 15.4 G-Function on Functioning Water Points
 
 ```{r}
 G_osun_state_func.csr <- envelope(wp_func_ppp_comb.km, Gest, nsim = 39)
@@ -692,14 +708,13 @@ G_osun_state_func.csr <- envelope(wp_func_ppp_comb.km, Gest, nsim = 39)
 plot(G_osun_state_func.csr)
 ```
 
-#### G-Function on Non-Functioning Water Points
+#### 15.5 G-Function on Non-Functioning Water Points
 
 ```{r}
 G_osun_state_nfunc.csr <- envelope(wp_nfunc_ppp_comb.km, Gest, nsim = 39)
 ```
 
 ```{r}
-#| eval: false
 plot(G_osun_state_nfunc.csr)
 ```
 
@@ -707,7 +722,7 @@ From the above analysis we can say for certain that all the water points in Osun
 
 Reasons could be there are natural water sources such as rivers, quarries and reservoirs at these areas or these areas are heavily populated with people, and the water points are built close to residential areas.
 
-### Spatial Correlation Analysis
+### 16.0 Spatial Correlation Analysis
 
 To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the L-Function for pair correlation analysis. We will applying this over the entire Osun state.
 
@@ -719,7 +734,7 @@ To confirm whether the spatial distribution of functional and non-functional wat
 
 Null hypothesis will be rejected.
 
-### **Run the L-Function on Osun State:**
+### **17.0 Run the L-Function on Osun State:**
 
 We'll now perform the L Function across the entire Osun state using the PPP and owin object we've created earlier.
 
@@ -732,14 +747,14 @@ plot(L_osun_state, . -r ~ r,
 
 ![](Lfunction_osun_km.png)
 
-#### Complete Spatial Randomness Test
+#### 17.1 Complete Spatial Randomness Test
 
 ```{r}
 #| eval: false
 L_osun_state.csr <- envelope(wp_ppp.km, Lest, nsim = 39, rank = 1, glocal=TRUE)
 ```
 
-**Plot the Envelop**
+**17.2 Plot the Envelop**
 
 ```{r}
 #| eval: false
@@ -751,3 +766,9 @@ plot(L_osun_state.csr, . - r ~ r, xlab="d(km)", ylab="L(d)-r")
 From the combined functional and non-functional water points. We can say with statistical certainty that the functional and non-functional points are clustered close to each other, as from the graph the distance is so small that it can't even be seen and are spatially dependent on each other. Therefore we reject the null hypothesis that the water points are distributed randomly and spatially independent from each other.
 
 This finding ties in with the earlier cluster analysis using the G-Function that there might be practical/geographical reasons why they are spatially dependent and clustered in certain areas. Reasons can include having water points close to residential areas or close to natural water sources such as rivers, quarries or reservoirs.
+
+### Acknowledgement:
+
+Thanks to Prof. Kam for the resources on his hands-on and in-class exercises that assisted in the completion of this take home exercise!
+
+Referenced the [Spatstat book](https://spatstat.org/book.html) for advice on which functions to use.
