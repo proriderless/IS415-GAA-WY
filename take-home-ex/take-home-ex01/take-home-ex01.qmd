@@ -1,7 +1,7 @@
 ---
 title: "Take-home Exercise 1"
 date: "30 January 2023"
-date-modified: "`12 February 2023`"
+date-modified: "12 February 2023"
 author: "Tan Wen Yang"
 execute: 
   echo: true
@@ -187,7 +187,7 @@ tm_shape(NGA_wp_count) +
           legend.hist = TRUE) +
   tm_borders(lwd = 0.1,
              alpha = 1) +
-  tm_layout(main.title = "Rate map of functional water point by LGAs in Osun",
+  tm_layout(main.title = "Rate map of non-functional water point by LGAs in Osun",
             legend.outside = TRUE)
 ```
 :::
@@ -724,7 +724,7 @@ Reasons could be there are natural water sources such as rivers, quarries and re
 
 ### 16.0 Spatial Correlation Analysis
 
-To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the L-Function for pair correlation analysis. We will applying this over the entire Osun state.
+To confirm whether the spatial distribution of functional and non-functional water points are independent, we will be using the L-Function for correlation analysis. We will applying this over the entire Osun state with both functional and non-functional water points combined.
 
 -   H0: The functional and non-functional water points are distributed randomly and spatially independent
 
