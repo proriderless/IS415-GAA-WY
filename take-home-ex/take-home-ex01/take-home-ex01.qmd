@@ -12,7 +12,7 @@ editor: visual
 
 ### 1.0 Introduction
 
-This analysis aims to take a look at all the functional and non-functional water points in Osun State, Nigeria. By looking at the location of the functional and non-functional water points, we will be able to determine which clusters require immediate rehabilitation. We will be perform three parts: Exploratory analysis, Second order spatial analysis and Spatial Correlation Analysis among the functional and non-functional water points.
+This analysis aims to take a look at all the functional and non-functional water points in Osun State, Nigeria. By looking at the location of the functional and non-functional water points, we will be able to determine which clusters require immediate rehabilitation and whether these clusters are statistically significant. The analysis will comprise of three parts: Exploratory analysis, Second order spatial analysis and Spatial Correlation Analysis among the functional and non-functional water points.
 
 ### 2.0 Load all the relevant packages
 
@@ -493,7 +493,7 @@ From this map, we can prioritise areas that would need to be fixed, and also to 
 
 Now that we have completed our spatial data analysis, it's time we look at some of the areas where there are particularly high clusters of functioning and non-functioning water points and determine whether their clusters are statistically significant or not.
 
-For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points. We will also conduct on the G function across the entire state of Osun to confirm that all (both functioning and non-functioning) water point's cluster are statistically significant.
+For this, I have chosen two states each as identified in the kernel density map for areas with high cluster of functioning and non-functioning water points. We will also use the G function across the entire state of Osun to confirm that all (both functioning and non-functioning) water point's cluster are statistically significant.
 
 **Functioning:**
 
@@ -676,7 +676,7 @@ wp_ppp = wp_ppp[osun_owin]
 wp_ppp.km = rescale(wp_ppp, 1000, "km")
 ```
 
-We'll now perform the L Function across the entire Osun state to confirm our hypothesis that the
+We'll now perform the G Function across the entire Osun state to confirm our hypothesis that the water points are clustered in general.
 
 ```{r}
 G_osun_state = Gest(wp_ppp.km, correction="best")
