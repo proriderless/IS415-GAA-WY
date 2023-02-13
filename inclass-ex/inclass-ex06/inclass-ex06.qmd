@@ -1,0 +1,21 @@
+---
+title: "In-Class Exercise 6"
+date: "13 February 2023"
+format: html
+date-modified: "`r Sys.Date()`"
+number-sections: true
+
+execute:
+  message: true
+  warning: false
+  echo: true
+  eval: true
+  
+editor: visual
+---
+
+In-class use SFDEP which is newer. Hands-on is using SPDEP
+
+```{r}
+pacman::p_load(sf, tmap, sfdep, tidyverse)
+```
