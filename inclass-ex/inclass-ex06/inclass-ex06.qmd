@@ -19,3 +19,13 @@ In-class use SFDEP which is newer. Hands-on is using SPDEP
 ```{r}
 pacman::p_load(sf, tmap, sfdep, tidyverse)
 ```
+
+Load the geospatial data
+
+```{r}
+hunan_data_geo <- st_read(dsn="data/geospatial", layer="Hunan")
+```
+
+```{r}
+hunan_data_as <- read_csv("data/aspatial/Hunan_2012.csv")
+```
