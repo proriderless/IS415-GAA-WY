@@ -1,0 +1,29 @@
+---
+title: "Take-Home Exercise 2"
+date: "18 February 2023"
+date-modified: "18 February 2023"
+author: "Tan Wen Yang"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual
+---
+
+### Glossary:
+
+| INDONESIA              | ENGLISH                       |
+|------------------------|-------------------------------|
+| WILAYAH KOTA           | CITY AREA                     |
+| KECAMATAN              | SUBDISTRICT                   |
+| KERLURAHAN             | WARD (Local Villages)         |
+| SASARAN                | TARGET                        |
+| BELUM VAKSIN           | NOT YET VACCINATED            |
+| JUMLAH DOSIS           | DOSAGE AMOUNT                 |
+| TOTAL VAKSIN DIBERIKAN | TOTAL VACCINE GIVEN           |
+| LANSIA DOSIS           | ELDERY DOSAGE                 |
+| PELAYAN PUBLIK DOSIS   | PUBLIC SERVANT DOSAGE         |
+| GOTONG ROYONG          | KAMPUNG SPIRIT (MUTUAL CO-OP) |
+| TENAGA KESEHATAN       | HEALTH WORKERS                |
+| TAHAPAN                | STAGES 3 VACCINATION          |
+| REMAJA                 | YOUTH VACCINATION             |
