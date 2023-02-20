@@ -1,0 +1,244 @@
+---
+title: "In-class Exercise 7"
+date: "18 February 2023"
+date-modified: "18 February 2023"
+author: "Tan Wen Yang"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual
+---
+
+Load Data
+
+```{r}
+pacman::p_load(sf, tmap, sfdep, tidyverse)
+```
+
+```{r}
+hunan <- st_read(dsn="data/geospatial", layer="Hunan")
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+#hunanGDPPC <- read_csv("data/aspatial/Hunan_GDPPC.csv")
+```
+
+```{r}
+hunan_GDPPC <- left_join(hunan, hunan2012) %>%
+  select(1:4,7,15)
+```
+
+```{r}
+tmap_mode("plot") +
+  tm_shape(hunan_GDPPC) + 
+  tm_fill("GDPPC",
+          style="quantile",
+          palette="Blues",
+          title="GDPPC")+
+  tm_layout(main.title = "Distribution of GDP per capita by district, Hunan Province",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45,
+            legend.width = 0.35,
+            frame=TRUE) +
+  tm_borders(alpha=0.5)+
+  tm_compass(type="8star", size=2)+
+  tm_scale_bar()+
+  tm_grid(alpha=0.2)
+```
+
+```{r}
+wm_q <- hunan_GDPPC %>%
+  mutate(nb=st_contiguity(geometry),
+         wt = st_weights(nb, style="W"),
+         .before = 1)
+```
+
+### Global moran 
+
+(tend not to do this, we will straight away do the global moran test)
+
+```{r}
+moranI <- global_moran(wm_q$GDPPC, wm_q$nb, wm_q$wt)
+```
+
+Based on the result, (P-value \< Alpha) we have enough evidence to reject null hypothesis that the GDP is spatial independent. Therefore show sign of clustering and spatially dependent
+
+```{r}
+global_moran_test(wm_q$GDPPC, wm_q$nb, wm_q$wt)
+```
+
+```{r}
+set.seed(1234) #Ensure reproducability
+```
+
+Permutation Test
+
+If dataset is small, can increase the number of simulation for stability
+
+```{r}
+global_moran_perm(wm_q$GDPPC, wm_q$nb, wm_q$wt, nsim=99)
+```
+
+```{r}
+lisa <- wm_q %>% 
+  mutate(local_moran = local_moran(GDPPC, nb, wt, nsim=99),
+         .before=1)%>%
+  unnest(local_moran) #explode the list
+```
+
+In general, mean and pysal are the same. (So use either mean/pysal)
+
+Median is non-parametric version - used for non-normality assumption (if the curve is not normal, use median instead)
+
+Pysal is using python algorithm
+
+**So just stay with Mean**
+
+```{r}
+lisa
+```
+
+Plotting
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("ii")+
+  tm_borders(alpha=0.5)+
+  tm_view(set.zoom.limits=c(6,8))
+```
+
+Should use p_ii_sim (tend to use), or p_folded_sim.
+
+p_ii_sim is after you've ran the 100 simulations
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("p_ii_sim")+
+  tm_borders(alpha=0.5)+
+  tm_view(set.zoom.limits=c(6,8))
+```
+
+### Visualize local moran I
+
+Exlcude ALL THE INSIGNIFICANT ones
+
+Need to have a class called insignificant. (in hands-on exercise). the current map don't have.
+
+Take-home is not using LISA
+
+```{r}
+lisa_sig <- lisa %>%
+  filter(p_ii < 0.05)
+
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5)+
+tm_shape(lisa_sig) +
+  tm_fill("mean") +
+  tm_borders(alpha=0.4)
+```
+
+### Hot-cold spot analysis
+
+```{r}
+HCSA <- wm_q %>%
+  mutate(local_Gi = local_gstar_perm(
+    GDPPC, nb, wt, nsim=99),
+    .before=1) %>%
+  unnest(local_Gi)
+```
+
+Local G is you include itself!!!
+
+```{r}
+HCSA
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(HCSA)+
+  tm_fill("gi_star")+
+  tm_borders(alpha=0.5)+
+  tm_view(set.zoom.limits=c(6,8))
+
+```
+
+The stuff shown here is not useful, as we are only interested in \<0.05 / \<0.01 depending on significance level
+
+```{r}
+tmap_mode("plot")
+tm_shape(HCSA)+
+  tm_fill("p_sim")+
+  tm_borders(alpha=0.5)
+```
+
+# How to perform emerging hotspot analysis
+
+for take-home exercise
+
+Consolidate the files for take-home ex
+
+```{r}
+pacman::p_load(sf, sfdep, tmap, plotly, tidyverse, zoo, Kendall)
+```
+
+```{r}
+hunan <- st_read(dsn="data/geospatial", layer="Hunan")
+GDPPC <- read_csv("data/aspatial/Hunan_GDPPC.csv")
+```
+
+```{r}
+GDPPC_st <- spacetime(GDPPC, hunan,
+                      .loc_col="County",
+                      .time_col="Year")
+```
+
+```{r}
+GDPPC_st
+```
+
+```{r}
+GDPPC_nb <- GDPPC_st %>%
+  activate("geometry") %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         wt=st_weights(nb)) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+```
+
+```{r}
+GDPPC_nb
+```
+
+```{r}
+gi_stars <- GDPPC_nb %>%
+  group_by(Year)%>%
+  mutate(gi_star=local_gstar_perm(
+    GDPPC, nb, wt, nsim=99)) %>%
+  tidyr::unnest(gi_star)
+```
+
+```{r}
+gi_stars
+```
+
+Mann-Kendall Test
+
+```{r}
+cbg <- gi_stars %>%
+  ungroup() %>%
+  filter(County == "Changsha") |>
+  select(County, Year, gi_star)
+```
+
+```{r}
+ehsa <- emerging_hotspot_analysis(
+  x=GDPPC_st,
+  .var="GDPPC",
+  k=1,
+  nsim=99
+)
+```
