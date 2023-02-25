@@ -12,6 +12,10 @@ editor: visual
 
 ### Glossary:
 
+Looking at receptiveness
+
+Remove all outer islands
+
 | INDONESIA              | ENGLISH                       |
 |------------------------|-------------------------------|
 | WILAYAH KOTA           | CITY AREA                     |

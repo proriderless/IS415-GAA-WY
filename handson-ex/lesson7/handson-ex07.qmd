@@ -283,7 +283,7 @@ hunan$lag_GDPPC <- lag.listw(rswm_q, hunan$GDPPC)
 DV <- hunan$lag_GDPPC - mean(hunan$lag_GDPPC)     
 ```
 
-Centering the local Moran\'s around the mean.
+Centering the local Moran's around the mean.
 
 ```{r}
 LM_I <- localMI[,1] - mean(localMI[,1])    
