@@ -27,3 +27,196 @@ editor: visual
 | TENAGA KESEHATAN       | HEALTH WORKERS                |
 | TAHAPAN                | STAGES 3 VACCINATION          |
 | REMAJA                 | YOUTH VACCINATION             |
+
+### Load the packages in:
+
+| Packages  |                         |
+|-----------|-------------------------|
+| Lubridate | Handle date/time easily |
+|           |                         |
+|           |                         |
+
+```{r}
+pacman::p_load(sf, tmap, sfdep, tidyverse, plotly, readxl, lubridate, r, plyr)
+```
+
+# Data-Preprocessing (Geospatial)
+
+```{r}
+jakarta_village <- st_read(dsn="data/geospatial", "BATAS_DESA_DESEMBER_2019_DUKCAPIL_DKI_JAKARTA")
+```
+
+**Selecting only the first 9 Columns**
+
+Up till JUMLAH_PEN (Total Population)
+
+```{r}
+jakarta_village <- jakarta_village[, 0:9]
+```
+
+Checking for invalid geometries
+
+```{r}
+length(which(st_is_valid(jakarta_village) == FALSE))
+```
+
+Check if there are any NA values
+
+```{r}
+na_rows <- jakarta_village[apply(is.na(jakarta_village), 1, any),]
+na_rows
+```
+
+There are empty rows in KESA_KELUR or Kelurahan, which is the target of our analysis. Therefore we will remove it.
+
+```{r}
+jakarta_village <- na.omit(jakarta_village,c("DESA_KELUR"))
+```
+
+Now we check again
+
+```{r}
+na_rows <- jakarta_village[apply(is.na(jakarta_village), 1, any),]
+na_rows
+```
+
+It appears that there are no more NA rows!
+
+### Check and Transform the CRS of Jakarta
+
+```{r}
+st_crs(jakarta_village)
+```
+
+**Transform into the appropriate one: DGN95 - ESPG 23845**
+
+```{r}
+jakarta_village <- st_transform(jakarta_village, 23845)
+```
+
+```{r}
+st_crs(jakarta_village)
+```
+
+#### Remove Outer Islands
+
+As tasked by the assignment, we have to remove the outer islands. So let's view the map
+
+```{r}
+tm_shape(jakarta_village) + 
+  tm_polygons("KAB_KOTA")
+```
+
+There are a few outer islands in Indonesia, and the ones closest according to Google are:
+
+1.  Kepulauan Seribu Utara (North Thousand Islands)
+
+2.  Kepulauan Seribu Selatan (South Thousand Islands)
+
+We will see if there are any data in the KAB_KOTA (City Regency) that matches both.
+
+```{r}
+unique(jakarta_village$"KAB_KOTA")
+```
+
+From the above, we can tell that Kepulauan Seribu (Thousand Islands) would encompass both Utara and Selatan (North and South)
+
+#### We will exclude them from our dataset
+
+```{r}
+jakarta_village <- filter(jakarta_village, KAB_KOTA != "KEPULAUAN SERIBU")
+```
+
+Now we visualize to ensure there are no more outer islands
+
+```{r}
+tm_shape(jakarta_village) + 
+  tm_polygons("KAB_KOTA")
+```
+
+It appears they are removed!
+
+# Data-Preprocessing (Aspatial)
+
+We need to process the dataset and only get the data we require. In this case, we need all the city/sub-district/ward areas. To data is cumulative, so we need to subtract from the previous month to get the current vaccinated.
+
+To get the number of vaccinated people, we take TARGET - NOT YET VACCINATED column.
+
+We'll take a look at the data we're dealing with by importing the earliest one on July 2021
+
+```{r}
+july2021 <- read_xlsx("data/vaccination/Data Vaksinasi Berbasis Kelurahan (31 Juli 2021).xlsx")
+```
+
+We glimpse at the data:
+
+```{r}
+glimpse(july2021)
+```
+
+We only require the first 6 column, and we need to create two more columns. We also remove the first row as that is not necessary
+
+1.  Number vaccinated cumulatively
+2.  month
+
+Once we have the number vaccinated cumulatively for that month, we can drop both 'SASARAN' and 'BELUM VAKSIN'.
+
+```{r}
+july2021 <- dplyr::select(july2021, 1:6) %>%
+  dplyr::slice(-1) %>%
+  mutate(total_vaccinated = `SASARAN` - `BELUM VAKSIN`) %>%
+  mutate(month = dmy("31-Jul-2021")) %>%
+  dplyr::select(-SASARAN, -`BELUM VAKSIN`)
+```
+
+Check if our data is correct:
+
+```{r}
+july2021
+```
+
+Now we will create a function to handle the pre-processing of the data. Mainly translating from Indonesian to English and apply the date into the tibble dataframe.
+
+```{r}
+
+file_list <- list.files(path = "data/vaccination", pattern = "*.xlsx", full.names=TRUE)
+
+process_aspatial_file <- function(file_name) {
+  
+    #Get the month and year of the file
+    pattern <- "(\\b\\d{1,2}\\D{0,3})?\\b(?:Jan(?:uari)?|Feb(?:ruari)?|Mar(?:et)?|Apr(?:il)?|Mei|Jun(?:i)?|Jul(?:i)?|Agu(?:stus)?|Sep(?:tember)?|Okt(?:ober)?|(Nov|Des)(?:ember)?)\\D?(\\d{1,2}\\D?)?\\D?((19[7-9]\\d|20\\d{2})|\\d{2})"
+
+    
+    month_dict <- c("Januari"="January","Februari"="February","Maret"="March",
+                "April"="April", "Mei"="May", "Juni"="June","Juli"="July",
+                "Agustus"="August", "September"="September", "Oktober"="October"                  ,"November"="November","Desember"="December")
+    
+    matches <- str_extract(file_name, regex(pattern))
+    replaced_eng <- str_replace_all(matches, month_dict)
+    month_year <- dmy(replaced_eng)
+    month_year_string <- format(month_year, "%d-%m-%Y")
+    
+    #Calculate the vaccination
+    vax_data <- read_xlsx(file_name)
+    vax_data <- dplyr::select(vax_data, 1:6) %>%
+                dplyr::slice(-1) %>%
+                mutate(total_vaccinated = `SASARAN` - `BELUM VAKSIN`) %>%
+                mutate(month = month_year_string) %>%
+                dplyr::select(-SASARAN, -`BELUM VAKSIN`)
+    
+    return(vax_data)
+    
+  }
+```
+
+```{r}
+dflist <- lapply(seq_along(file_list), function(x) process_aspatial_file(file_list[x]))
+```
+
+Get the datatable for the entire jakarta
+
+```{r}
+vacc_jakarta <- ldply(dflist, data.frame)
+```
+
+Group by the dates and repivot (pivot_wider) them to columns for easier calculation
