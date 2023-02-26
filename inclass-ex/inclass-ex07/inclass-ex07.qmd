@@ -53,7 +53,7 @@ wm_q <- hunan_GDPPC %>%
          .before = 1)
 ```
 
-### Global moran 
+### Global moran
 
 (tend not to do this, we will straight away do the global moran test)
 

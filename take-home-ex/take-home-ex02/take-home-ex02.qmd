@@ -41,7 +41,7 @@ Remove all outer islands
 |           |                         |
 
 ```{r}
-pacman::p_load(sf, tmap, sfdep, tidyverse, plotly, readxl, lubridate, r, plyr)
+pacman::p_load(sf, tmap, sfdep, tidyverse, readxl, lubridate, r, plyr, ggplot2)
 ```
 
 # Data-Preprocessing (Geospatial)
@@ -134,6 +134,7 @@ jakarta_village <- filter(jakarta_village, KAB_KOTA != "KEPULAUAN SERIBU")
 Now we visualize to ensure there are no more outer islands
 
 ```{r}
+tmap_mode("plot")
 tm_shape(jakarta_village) + 
   tm_polygons("KAB_KOTA")
 ```
@@ -142,7 +143,7 @@ It appears they are removed!
 
 # Data-Preprocessing (Aspatial)
 
-We need to process the dataset and only get the data we require. In this case, we need all the city/sub-district/ward areas. To data is cumulative, so we need to subtract from the previous month to get the current vaccinated.
+We need to process the dataset and only get the data we require. In this case, we need all the city/sub-district/ward areas. To data is cumulative, so we need to subtract from the previous month to get the current vaccinated. When downloaded, it appears that 28 Feb 2022 is missing. So, we'll work with 27 for that month.
 
 To get the number of vaccinated people, we take TARGET - NOT YET VACCINATED column.
 
@@ -181,6 +182,12 @@ july2021
 
 Now we will create a function to handle the pre-processing of the data. Mainly translating from Indonesian to English and apply the date into the tibble dataframe.
 
+### Pre-processing Function
+
+The following function will apply the months and date, and also apply the rates of change as defined:
+
+(TARGET - NOT VAX) / TARGET
+
 ```{r}
 
 file_list <- list.files(path = "data/vaccination", pattern = "*.xlsx", full.names=TRUE)
@@ -198,14 +205,14 @@ process_aspatial_file <- function(file_name) {
     matches <- str_extract(file_name, regex(pattern))
     replaced_eng <- str_replace_all(matches, month_dict)
     month_year <- dmy(replaced_eng)
-    month_year_string <- format(month_year, "%d-%m-%Y")
+    #month_year_string <- format(month_year, "%d-%m-%Y")
     
     #Calculate the vaccination
     vax_data <- read_xlsx(file_name)
     vax_data <- dplyr::select(vax_data, 1:6) %>%
                 dplyr::slice(-1) %>%
-                mutate(total_vaccinated = `SASARAN` - `BELUM VAKSIN`) %>%
-                mutate(month = month_year_string) %>%
+                mutate(total_vaccinated_rate = (`SASARAN` - `BELUM VAKSIN`) / SASARAN) %>%
+                mutate(month = month_year) %>%
                 dplyr::select(-SASARAN, -`BELUM VAKSIN`)
     
     return(vax_data)
@@ -217,10 +224,355 @@ process_aspatial_file <- function(file_name) {
 dflist <- lapply(seq_along(file_list), function(x) process_aspatial_file(file_list[x]))
 ```
 
-Get the datatable for the entire jakarta
+#### Get the datatable for the entire Jakarta
 
 ```{r}
 vacc_jakarta <- ldply(dflist, data.frame)
 ```
 
-Group by the dates and repivot (pivot_wider) them to columns for easier calculation
+#### Rename the Indonesia names and sort the month column for better understanding:
+
+```{r}
+vacc_jakarta <- vacc_jakarta %>% 
+  dplyr::rename(
+    `village_code`=`KODE.KELURAHAN`,
+    `city_area`=`WILAYAH.KOTA`,
+    `sub_district`=KECAMATAN, 
+    `village`=KELURAHAN
+    ) %>%
+  arrange(month)
+```
+
+#### Check if there are any NA values
+
+```{r}
+vacc_jakarta[rowSums(is.na(vacc_jakarta))!=0,]
+```
+
+**None! We'll pivot the rows of the dates into columns so it resembles a timeline**
+
+Note that it is a cumulative curve, where the vaccination rates will increase every month.
+
+```{r}
+vacc_jakarta <- vacc_jakarta %>% 
+                    pivot_wider(names_from=month,
+                                values_from=total_vaccinated_rate)
+```
+
+We're done with the Aspatial side, now to combine both the geospatial and aspatial data
+
+### Combining Geospatial and Aspatial Data:
+
+From the two datasets, it appears that a good place to perform inner join of the two tables would the the village level. (DESA_KELUR & village)
+
+But first, we need to check to see if they are any discrepancies first before we perform the inner join.
+
+```{r}
+jakarta_village_subdis <- c(jakarta_village$DESA_KELUR)
+vacc_jakarta_subdis <- c(vacc_jakarta$village)
+
+#Check if they are not in each other
+unique(jakarta_village_subdis[!(jakarta_village_subdis %in% vacc_jakarta_subdis)])
+```
+
+```{r}
+#Check if they are not in each other
+unique(vacc_jakarta_subdis[!(vacc_jakarta_subdis %in% jakarta_village_subdis)])
+```
+
+There appears to be a mismatch. There are some villages that are NOT present in the vaccine data
+
+#### MISSING VILLAGES IN VACCINE DATA:
+
+| Missing Villages  |
+|-------------------|
+| PULAU KELAPA      |
+| PULAU HARAPAN     |
+| PULAU PARI        |
+| PULAU TIDUNG      |
+| PULAU UNTUNG JAWA |
+| PULAU PANGGANG    |
+
+These are villages from the outer islands, therefore should be excluded, but inner join operation will automatically drop and exclude them. So we do not need to worry about them!
+
+We need to change and modify the following: (From quick research, it appears there are some spelling errors on the aspatial data side)
+
+| Geospatial           | Aspatial                      |
+|----------------------|-------------------------------|
+| BALEKAMBANG          | BALE KAMBANG                  |
+| HALIM PERDANA KUSUMA | HALIM PERDANA KUSUMAH (error) |
+| JATIPULO             | JATI PULO                     |
+| KRENDANG             | KERENDANG (ERROR)             |
+| KRAMATJATI           | KRAMAT JATI                   |
+| PALMERIAM            | PAL MERIAM                    |
+| PINANGRANTI          | PINANG RANTI                  |
+| TENGAH               | KAMPUNG TENGAH                |
+| RAWAJATI             | RAWA JATI                     |
+
+### Make the modifications:
+
+We will change the vacc_jakarta set as there are misspellings (Kerendang should be Krendang) in the vacc_jakarta set to match with the geospatial set.
+
+```{r}
+vacc_jakarta$village[vacc_jakarta$village == 'BALE KAMBANG'] <- 'BALEKAMBANG'
+vacc_jakarta$village[vacc_jakarta$village == 'HALIM PERDANA KUSUMAH'] <- 'HALIM PERDANA KUSUMA'
+vacc_jakarta$village[vacc_jakarta$village == 'JATI PULO'] <- 'JATIPULO'
+vacc_jakarta$village[vacc_jakarta$village == 'KERENDANG'] <- 'KRENDANG'
+vacc_jakarta$village[vacc_jakarta$village == 'KRAMAT JATI'] <- 'KRAMATJATI'
+vacc_jakarta$village[vacc_jakarta$village == 'PAL MERIAM'] <- 'PALMERIAM'
+vacc_jakarta$village[vacc_jakarta$village == 'PINANG RANTI'] <- 'PINANGRANTI'
+vacc_jakarta$village[vacc_jakarta$village == 'KAMPUNG TENGAH'] <- 'TENGAH'
+vacc_jakarta$village[vacc_jakarta$village == 'RAWA JATI'] <- 'RAWAJATI'
+```
+
+Check again to make sure modification are done correctly:
+
+```{r}
+jakarta_village_subdis <- c(jakarta_village$DESA_KELUR)
+vacc_jakarta_subdis <- c(vacc_jakarta$village)
+
+unique(jakarta_village_subdis[!(jakarta_village_subdis %in% vacc_jakarta_subdis)])
+```
+
+```{r}
+unique(vacc_jakarta_subdis[!(vacc_jakarta_subdis %in% jakarta_village_subdis)])
+```
+
+All good, now we can perform inner join.
+
+```{r}
+combined_jakarta <- left_join(jakarta_village, vacc_jakarta,
+                              by=c("DESA_KELUR"="village"))
+
+combined_jakarta <- combined_jakarta %>% 
+  dplyr::select(1:9, 13:24)
+```
+
+#### Visualize the Monthly Rate of Vaccination: (TO SEE PROPERLY, WE NEED TO SET FIXED BREAKPOINT)
+
+```{r}
+trace_val <- c("2021-07-31", "2021-08-31", "2021-09-30", "2021-10-31", "2021-11-30", "2021-12-31", "2022-01-31", "2022-02-27", "2022-03-31", "2022-04-30", "2022-05-31", "2022-06-30")
+
+plot_creation <- function(df, month_name){
+  tmap_mode("plot")
+  tm_shape(df) +
+    tm_borders(alpha=0.5)+
+    tm_fill(month_name, 
+            title="Vaccination Rate",
+            breaks=c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1))+
+  tm_layout(main.title = month_name,
+          main.title.position = "center",
+          main.title.size = 1.2,
+          legend.height = 0.45, 
+          legend.width = 0.35,
+          frame = TRUE)
+}
+```
+
+#### View the map interactively (June 2022)
+
+```{r}
+tmap_mode("view")+
+tm_shape(combined_jakarta) +
+    tm_borders(alpha=0.5)+
+    tm_polygons("2022-06-30",
+                id="DESA_KELUR", 
+                breaks=c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1), 
+                title="Vaccination Rate")
+
+```
+
+```{r}
+tmap_arrange(plot_creation(combined_jakarta, "2021-07-31"),
+             plot_creation(combined_jakarta, "2021-08-31"),
+             plot_creation(combined_jakarta, "2021-09-30"),
+             plot_creation(combined_jakarta, "2021-10-31"))
+```
+
+```{r}
+tmap_arrange(plot_creation(combined_jakarta, "2021-11-30"),
+             plot_creation(combined_jakarta, "2021-12-31"),
+             plot_creation(combined_jakarta, "2022-01-31"),
+             plot_creation(combined_jakarta, "2022-02-27"))
+```
+
+```{r}
+tmap_arrange(plot_creation(combined_jakarta, "2022-03-31"),
+             plot_creation(combined_jakarta, "2022-04-30"),
+             plot_creation(combined_jakarta, "2022-05-31"),
+             plot_creation(combined_jakarta, "2022-06-30"))
+```
+
+## Describe the spatial patterns revealed by the maps:
+
+From a glance, it appears that during the first three months, during 2021, only a few city states has a high rate of vaccination. However, in subsequent months, the neighboring village sub-district all begin to catch up save for a few. Eventually ending in 2022 June with most of the people vaccinated in Jakarta.
+
+The village closest to the villages with higher vaccination rates are the second to start receiving the vaccination doses, as they show demonstrably higher vaccination rates compared to other villages (October 2021). They are then slowly doled out across nearby villages until most villages in Jakarta are almost fully vaccinated.
+
+Interestingly, during this period of measure (July), there was an exponential spike [(Reuters)](https://www.reuters.com/world/asia-pacific/indonesia-emergency-covid-19-curbs-be-effective-july-2-20-minister-2021-07-01/) in Covid-19 cases with heavy bans and movement restrictions across the board with recorded 2.2 million cases. This might explain why the almost equal distribution in terms of vaccination rates across the board in Jakarta. The only two villages, seemingly with lower rates compared to the rest of the city are:
+
+1.  Senayan
+
+2.  Kebon Melati
+
+3.  Petamburan
+
+### Plot the rate of change using tmap
+
+```{r}
+#trace_val <- c("2021-07-31", "2021-08-31", "2021-09-30", "2021-10-31", "2021-11-30", "2021-12-31", "2022-01-31", "2022-02-27", "2022-03-31", "2022-04-30", "2022-05-31", "2022-06-30")
+
+#jakarta_combined_long <- combined_jakarta %>% 
+#  pivot_longer(cols=trace_val, names_to="Month_Vac", values_to = #"total_vaccinated_rate")
+```
+
+# Local Gi\* Analysis
+
+Over here we will compute the local Gi\* values for the monthly vaccination rates. Gi\* only works for distance-based matrix and queen contiguity. This is to detect hot/cold spots for villages with high/low covid-19 vaccinations respectively. We will do it in a time-series to understand how the vaccinations are doled out across the country overtime.
+
+**Intepreting Gi\* Values:**
+
+1.  Gi\* \> 0: Grouping of areas with values higher than average
+2.  Gi\* \< 0: Grouping of areas with values lower than average
+
+The values represents the intensity of grouping.
+
+**Set the seed for reproducability**
+
+```{r}
+set.seed(1234)
+```
+
+#### Create our Spatio-Temporal Cube
+
+```{r}
+#Pivot long
+jakarta_combined_long <- combined_jakarta %>% 
+  pivot_longer(cols=trace_val, names_to="Date", values_to = "total_vaccinated_rate") %>%
+  mutate(Date=as_date(Date))
+```
+
+```{r}
+jakarta_combined_long
+```
+
+```{r}
+jakarta_combined_ts <- spacetime(jakarta_combined_long, jakarta_village,
+                                 .loc_col = "DESA_KELUR",
+                                 .time_col = "Date")
+```
+
+Check if it's a time cube
+
+```{r}
+is_spacetime_cube(jakarta_combined_ts)
+```
+
+#### Setting Contiguity Weight Matrices using Queen Method
+
+For Local G\* we will have to choose a distance weight matrix, whether it be fixed or inverse. In this case, we're trying to map out how vaccines are doled out from respectively from villages with high vaccination rates. Therefore, we will use Inverse Distance
+
+```{r}
+jakarta_combined_nb <- jakarta_combined_ts %>%
+  activate("geometry") %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         wt = st_inverse_distance(nb, geometry,
+                                   scale=1,
+                                   alpha=1),
+         .before=1)%>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+```
+
+```{r}
+jakarta_combined_nb
+```
+
+#### Visualize the Queen Contiguity with Inverse Distance:
+
+```{r}
+coords = st_coordinates(st_centroid(st_geometry(jakarta_combined_nb)))
+plot(jakarta_combined_nb$nb, coords, pch = 19, cex = 0.6, col= "red")
+```
+
+#### **Calculate the G\* for all the timeframe**
+
+Checking to ensure the output is correct
+
+```{r}
+jakarta_HCSA <- jakarta_combined_nb %>%
+  group_by(Date) %>%
+  mutate(gi_star = local_gstar_perm(
+    total_vaccinated_rate, nb, wt, nsim = 99)) %>%
+    tidyr::unnest(gi_star)
+```
+
+```{r}
+jakarta_HCSA
+```
+
+### Mapping Gi\* and show the Hot/Cold Spots
+
+Now that we have the data, we can map our Gi\* for analysis. This will show us how our hot and cold spot areas evolve over time. We will also exclude all statistically insignificant result.
+
+```{r}
+jakarta_HCSA_sig <- jakarta_HCSA %>%
+  filter(p_sim < 0.05)
+```
+
+```{r}
+create_gi_plot <- function(date_time) {
+  #Display the Gi* Vaccination Rate
+  tmap_mode("plot") +
+  tm_shape(filter(jakarta_HCSA, Date==date_time)) +
+    tm_polygons(id="DESA_KELUR")+
+    tm_borders(alpha=0.5)+
+    tm_shape(filter(jakarta_HCSA_sig, Date==date_time)) +
+    tm_fill("gi_star")+
+    tm_borders(alpha=0.4)+
+    tm_layout(main.title = paste("Gi* Vaccination Rates", date_time))
+}
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2021-07-31"),create_gi_plot("2021-08-31"))
+
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2021-09-30"),create_gi_plot("2021-10-31"))
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2021-11-30"),create_gi_plot("2021-12-31"))
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2022-01-31"),create_gi_plot("2022-02-27"))
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2022-03-31"),create_gi_plot("2022-04-30"))
+```
+
+```{r}
+tmap_arrange(create_gi_plot("2022-05-31"),create_gi_plot("2022-06-30"))
+```
+
+### Interpreting the results (MIGHT NEED A REWRITE)))!!
+
+From the start, we can see that some villages from the North, Central, South, East and West Jakarta have high vaccination hot spot clusters, before moving to the southern part of Jakarta which encompasses a portion of East and South Jakarta.
+
+Interestingly, Central Jakarta has the highest cluster of cold spots, where the vaccination rates are low.
+
+There could be a couple of reasons for the observed phenomena, first could be receptiveness. If we assume the vaccinations are doled out equally, we can suggest that the people in Central Jakarta are the least receptive compared to other areas. However, from quick research, it appears that Central Jakarta and South Jakarta has the highest concentration of mid--high wealth individuals, which means its demographic should be relatively the same, but it produces such different results.
+
+The more likely reason could be because these are disease hot spots, and they evolve over time, and the government is prioritizing areas where it is most ravaged by the virus. This explains the evolution of hot spots from north moving to south.
+
+### Man-Kendall Test
+
+Based on the maps above, we will pick two hot spots and 1 cold spots for our analysis.
+
+```{r}
+
+```
