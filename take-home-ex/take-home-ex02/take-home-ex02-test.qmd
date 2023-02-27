@@ -41,7 +41,7 @@ Remove all outer islands
 |           |                         |
 
 ```{r}
-pacman::p_load(sf, tmap, sfdep, tidyverse, readxl, lubridate, r, plyr, ggplot2, plotly)
+pacman::p_load(sf, tmap, sfdep, tidyverse, readxl, lubridate, r, plyr, ggplot2)
 ```
 
 # Data-Preprocessing (Geospatial)
@@ -211,7 +211,7 @@ process_aspatial_file <- function(file_name) {
     vax_data <- read_xlsx(file_name)
     vax_data <- dplyr::select(vax_data, 1:6) %>%
                 dplyr::slice(-1) %>%
-                mutate(total_vaccinated_rate = (((`SASARAN` - `BELUM VAKSIN`) / `SASARAN`))*100) %>%
+                mutate(total_vaccinated_rate = (((`SASARAN` - `BELUM VAKSIN`) / `SASARAN`))) %>%
                 mutate(month = month_year) %>%
                 dplyr::select(-SASARAN, -`BELUM VAKSIN`)
     
@@ -359,7 +359,7 @@ plot_creation <- function(df, month_name){
     tm_borders(alpha=0.5)+
     tm_fill(month_name, 
             title="Vaccination Rate",
-            breaks=c(37, 47, 57, 67, 75, 83, 90))+
+            breaks=c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))+
   tm_layout(main.title = month_name,
           main.title.position = "center",
           main.title.size = 1.2,
@@ -377,7 +377,7 @@ tm_shape(combined_jakarta) +
     tm_borders(alpha=0.5)+
     tm_polygons("2022-06-30",
                 id="DESA_KELUR", 
-                breaks=c(37, 47, 57, 67, 75, 83, 90),
+                breaks=c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
                 title="Vaccination Rate")
 
 ```
@@ -442,274 +442,3 @@ The values represents the intensity of grouping.
 ```{r}
 set.seed(1234)
 ```
-
-#### Create our Spatio-Temporal Cube
-
-```{r}
-#Pivot long
-jakarta_combined_long <- combined_jakarta %>% 
-  pivot_longer(cols=all_of(trace_val), names_to="Date", values_to = "total_vaccinated_rate") %>%
-  mutate(Date=as_date(Date))
-```
-
-```{r}
-jakarta_combined_long
-```
-
-```{r}
-jakarta_combined_ts <- spacetime(jakarta_combined_long, jakarta_village,
-                                 .loc_col = "DESA_KELUR",
-                                 .time_col = "Date")
-```
-
-Check if it's a time cube
-
-```{r}
-is_spacetime_cube(jakarta_combined_ts)
-```
-
-#### Setting Contiguity Weight Matrices using Queen Method
-
-For Local G\* we will have to choose a distance weight matrix, whether it be fixed or inverse. In this case, we're trying to map out how vaccines are doled out from respectively from villages with high vaccination rates. Therefore, we will use Inverse Distance
-
-```{r}
-jakarta_combined_nb <- jakarta_combined_ts %>%
-  activate("geometry") %>%
-  mutate(nb = include_self(st_contiguity(geometry)),
-         wt = st_inverse_distance(nb, geometry,
-                                   scale=1,
-                                   alpha=1),
-         .before=1)%>%
-  set_nbs("nb") %>%
-  set_wts("wt")
-```
-
-```{r}
-jakarta_combined_nb
-```
-
-#### Visualize the Queen Contiguity with Inverse Distance:
-
-```{r}
-coords = st_coordinates(st_centroid(st_geometry(jakarta_combined_nb)))
-plot(jakarta_combined_nb$nb, coords, pch = 19, cex = 0.6, col= "red")
-```
-
-#### **Calculate the G\* for all the timeframe**
-
-Checking to ensure the output is correct
-
-```{r}
-jakarta_HCSA <- jakarta_combined_nb %>%
-  group_by(Date) %>%
-  mutate(gi_star = local_gstar_perm(
-    total_vaccinated_rate, nb, wt, nsim = 99)) %>%
-    tidyr::unnest(gi_star)
-```
-
-```{r}
-jakarta_HCSA
-```
-
-### Mapping Gi\* and show the Hot/Cold Spots
-
-Now that we have the data, we can map our Gi\* for analysis. This will show us how our hot and cold spot areas evolve over time. We will also exclude all statistically insignificant result.
-
-```{r}
-jakarta_HCSA_sig <- jakarta_HCSA %>%
-  filter(p_sim < 0.05)
-```
-
-```{r}
-create_gi_plot <- function(date_time) {
-  #Display the Gi* Vaccination Rate
-  tm_shape(filter(jakarta_HCSA, Date==date_time)) +
-    tm_polygons()+
-    tm_borders(alpha=0.5)+
-    tm_shape(filter(jakarta_HCSA_sig, Date==date_time)) +
-    tm_fill("gi_star")+
-    tm_borders(alpha=0.4)+
-    tm_layout(main.title = paste("Gi* Vaccination Rates", date_time))
-}
-```
-
-::: callout-note
-The original results had most of the areas marked as insignificant. With the southern areas marked as Hot Spot and the Central Areas and some north areas marked as cold spots. But I'm not sure why after running it again (without changing any code), suddenly I get negative gi_star for everything and my p-value are all \< 0.05. The interpretation below is based on the original result I got which I cannot recreate.
-:::
-
-```{r}
-tmap_arrange(create_gi_plot("2021-07-31"),create_gi_plot("2021-08-31"))
-
-```
-
-```{r}
-tmap_arrange(create_gi_plot("2021-09-30"),create_gi_plot("2021-10-31"))
-```
-
-```{r}
-tmap_arrange(create_gi_plot("2021-11-30"),create_gi_plot("2021-12-31"))
-```
-
-```{r}
-tmap_arrange(create_gi_plot("2022-01-31"),create_gi_plot("2022-02-27"))
-```
-
-```{r}
-tmap_arrange(create_gi_plot("2022-03-31"),create_gi_plot("2022-04-30"))
-```
-
-```{r}
-tmap_arrange(create_gi_plot("2022-05-31"),create_gi_plot("2022-06-30"))
-```
-
-### Interpreting the results
-
-From the start, we can see that some villages from the North, Central, South, East and West Jakarta have high vaccination hot spot clusters, before moving to the southern part of Jakarta which encompasses a portion of East and South Jakarta.
-
-Interestingly, Central Jakarta has the highest cluster of cold spots, where the vaccination rates are low.
-
-There could be a couple of reasons for the observed phenomena, first could be receptiveness. If we assume the vaccinations are doled out equally, we can suggest that the people in Central Jakarta are the least receptive compared to other areas. However, from quick research, it appears that Central Jakarta and South Jakarta has the highest concentration of mid--high wealth individuals, which means its demographic should be relatively the same, but it produces such different results.
-
-The more likely reason could be because these are disease hot spots, and they evolve over time, and the government is prioritizing areas where it is most ravaged by the virus. This explains the evolution of hot spots from north moving to south.
-
-# Man-Kendall Test
-
-Based on the maps above, we will pick two hot spots and one cold spot for our analysis.
-
-Hot Spot:
-
-1.  Srengseng Sawah
-2.  Lenteng Agung
-
-Cold Spot:
-
-1.  Kebon Kacang
-
-### Srengseng Sawah
-
-```{r}
-srengseng <- jakarta_HCSA %>%
-  ungroup() %>%
-  filter(DESA_KELUR == "SRENGSENG SAWAH") %>%
-  select(DESA_KELUR, Date, gi_star)
-```
-
-```{r}
-srengseng_p <- ggplot(data = srengseng, 
-       aes(x = Date, 
-           y = gi_star)) +
-  geom_line() +
-  theme_light()
-
-ggplotly(srengseng_p)
-```
-
-### Lenteng Agung
-
-```{r}
-lenteng <- jakarta_HCSA %>%
-  ungroup() %>%
-  filter(DESA_KELUR == "LENTENG AGUNG") %>%
-  select(DESA_KELUR, Date, gi_star)
-```
-
-```{r}
-lenteng_p <- ggplot(data = lenteng, 
-       aes(x = Date, 
-           y = gi_star)) +
-  geom_line() +
-  theme_light()
-
-ggplotly(lenteng_p)
-```
-
-### Kebon Kacang
-
-```{r}
-kebon <- jakarta_HCSA %>%
-  ungroup() %>%
-  filter(DESA_KELUR == "KEBON KACANG") %>%
-  select(DESA_KELUR, Date, gi_star)
-```
-
-```{r}
-kebon_p <- ggplot(data = kebon, 
-       aes(x = Date, 
-           y = gi_star)) +
-  geom_line() +
-  theme_light()
-
-ggplotly(kebon_p)
-```
-
-## Emerging Hotspot Analysis
-
-Create a dataframe that only contains values we want to analyse
-
-```{r}
-gi_star_jakarta <- jakarta_HCSA %>%
-  select(8, 10,11:22)
-```
-
-```{r}
-ehsa <- gi_star_jakarta %>%
-  group_by(DESA_KELUR) %>%
-  summarise(mk=list(
-    unclass(
-      Kendall::MannKendall(gi_star)))) %>%
-  tidyr::unnest_wider(mk)
-```
-
-### Now we arrange to show the significant emerging hot/cold spots
-
-```{r}
-emerging <- ehsa %>% 
-  arrange(sl, abs(tau)) %>% 
-  slice(1:5)
-```
-
-```{r}
-drp_jakarta_combined_ts <- jakarta_combined_ts %>% st_drop_geometry()
-```
-
-```{r}
-ehsa <- emerging_hotspot_analysis(
-  x = drp_jakarta_combined_ts,
-  .var = "total_vaccinated_rate",
-  k = 1,
-  nsim = 99
-)
-```
-
-### Visualize the distribution of the EHSA Classes
-
-```{r}
-ggplot(data = ehsa,
-       aes(x =classification, fill=classification)) +
-  geom_bar()
-```
-
-From the chart above, we can see that there are more villages with oscilating hotspots class compared to others.
-
-### Visualize EHSA in Jakarta
-
-Now, we will visualize the geographic distribution of the EHSA classes. To do that, we will join together the jakarta_village shape file and the ehsa and also discard all insignificant results \<0.05
-
-```{r}
-jakarta_ehsa <- jakarta_village %>%
-  left_join(ehsa, by = c("DESA_KELUR" = "location"))
-```
-
-```{r}
-jakarta_ehsa_sig <- jakarta_ehsa  %>%
-  filter(p_value < 0.05)
-tmap_mode("plot")
-tm_shape(jakarta_ehsa) +
-  tm_polygons() +
-  tm_borders(alpha = 0.5) +
-tm_shape(jakarta_ehsa_sig) +
-  tm_fill("classification") + 
-  tm_borders(alpha = 0.4)
-```
-
-References:
