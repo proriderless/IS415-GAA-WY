@@ -1,0 +1,13 @@
+name: GeoDemo
+title: GeoDemo
+username:
+account: wenyang-shiny
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8419591
+bundleId: 6891632
+url: https://wenyang-shiny.shinyapps.io/GeoDemo/
+when: 1677482647.47854
+lastSyncTime: 1677482647.47855
+asMultiple: FALSE
+asStatic: FALSE
