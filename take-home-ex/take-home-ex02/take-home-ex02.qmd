@@ -1,7 +1,7 @@
 ---
 title: "Take-Home Exercise 2"
 date: "18 February 2023"
-date-modified: "18 February 2023"
+date-modified: "28 February 2023"
 author: "Tan Wen Yang"
 execute: 
   echo: true
@@ -11,10 +11,6 @@ editor: visual
 ---
 
 ### Glossary:
-
-Looking at receptiveness
-
-Remove all outer islands
 
 | INDONESIA              | ENGLISH                       |
 |------------------------|-------------------------------|
@@ -529,7 +525,7 @@ create_gi_plot <- function(date_time) {
     tm_shape(filter(jakarta_HCSA_sig, Date==date_time)) +
     tm_fill("gi_star")+
     tm_borders(alpha=0.4)+
-    tm_layout(main.title = paste("Gi* Vaccination Rates", date_time))
+    tm_layout(main.title = paste("Gi* Vax Rates", date_time))
 }
 ```
 
@@ -726,7 +722,7 @@ It might also reveal that vaccine availability is not consistent, even on a vill
 
 Overall, this highlights the importance of having to use multiple analysis in order to give a clearer picture into understanding the different spatial patterns and trends. It's only with this that we can narrow down the factors contributing to vaccination rates in Jakarta.
 
-### References:
+### Acknowledgement:
 
 -   Prof Kam for all of his guidance and materials
 
