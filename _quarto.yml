@@ -19,7 +19,7 @@ website:
         - text: "Hands-on exercise 7"
           href: handson-ex/lesson7/handson-ex07.qmd
         - text: "Hands-on exercise 8"
-          href: handson-ex/lesson8/handson-ex08.qmd
+          href: handson-ex/lesson8/handson-ex08
       - text: "In-class Exercise"
         menu: 
         - text: "In-class exercise 2"
