@@ -34,12 +34,22 @@ website:
           href: inclass-ex/inclass-ex06/inclass-ex06.qmd
         - text: "In-class exercise 7"
           href: inclass-ex/inclass-ex07/inclass-ex07.qmd
+        - text: "In-class exercise 8"
+          href: inclass-ex/inclass-ex08/inclass-ex08.qmd
+        - text: "In-class exercise 9"
+          href: inclass-ex/inclass-ex09/inclass-ex09.qmd
+        - text: "In-class exercise 10"
+          href: inclass-ex/inclass-ex10/inclass-ex10.qmd
+        - text: "In-class exercise 11"
+          href: inclass-ex/inclass-ex11/inclass-ex11.qmd
       - text: "Take-Home Exercise"
         menu: 
         - text: "Take-Home Exercise 1"
           href: take-home-ex/take-home-ex01/take-home-ex01.qmd
         - text: "Take-Home Exercise 2"
           href: take-home-ex/take-home-ex02/take-home-ex02.qmd
+        - text: "Take-Home Exercise 3"
+          href: take-home-ex/take-home-ex03/take-home-ex03.qmd
 
 format:
   html:
