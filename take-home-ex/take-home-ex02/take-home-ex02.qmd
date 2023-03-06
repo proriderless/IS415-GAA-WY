@@ -1,7 +1,7 @@
 ---
 title: "Take-Home Exercise 2"
 date: "18 February 2023"
-date-modified: "18 February 2023"
+date-modified: "28 February 2023"
 author: "Tan Wen Yang"
 execute: 
   echo: true
@@ -10,11 +10,15 @@ execute:
 editor: visual
 ---
 
-### Glossary:
+### Introduction:
 
-Looking at receptiveness
+Covid-19, a highly contagious respiratory illness caused by the SARS-CoV virus has ravaged the world for a good part of 2020-2021. Though not serious for most people, it is extremely virulent, and vulnerable people can be at risk of developing life-threatening symptoms.
 
-Remove all outer islands
+Indonesia first reported the disease sometime in March 2020 and only within a span of 40 days, all provinces were reported with the disease. The period we were tasked with conducting the analysis (July 2021) coincided with a [particularly large outbreak of Covid](https://www.reuters.com/world/asia-pacific/indonesia-emergency-covid-19-curbs-be-effective-july-2-20-minister-2021-07-01/) - this time due to the delta variant. This caused Indonesia to impose emergency measures to curb infections as it has significantly strained hospital and healthcare systems. The one way to curb them pre-emotively is through Indonesia's vaccination program. Thus today, we'll be looking at the receptiveness of Jakarta's residence to the covid-vaccine.
+
+To do this, we'll be performing an exploratory spatial data analysis, identifying cold/hot spots of vaccination as well as emerging hot spots to uncover the spatial-temporal trends of Jakarta's residence vaccination rates.
+
+### Data Glossary:
 
 | INDONESIA              | ENGLISH                       |
 |------------------------|-------------------------------|
@@ -32,16 +36,8 @@ Remove all outer islands
 | TAHAPAN                | STAGES 3 VACCINATION          |
 | REMAJA                 | YOUTH VACCINATION             |
 
-### Load the packages in:
-
-| Packages  |                         |
-|-----------|-------------------------|
-| Lubridate | Handle date/time easily |
-|           |                         |
-|           |                         |
-
 ```{r}
-pacman::p_load(sf, tmap, sfdep, tidyverse, readxl, lubridate, r, plyr, ggplot2, plotly)
+pacman::p_load(sf, tmap, sfdep, tidyverse, readxl, lubridate, plyr, ggplot2, plotly)
 ```
 
 # Data-Preprocessing (Geospatial)
@@ -162,7 +158,7 @@ glimpse(july2021)
 We only require the first 6 column, and we need to create two more columns. We also remove the first row as that is not necessary
 
 1.  Number vaccinated cumulatively
-2.  month
+2.  Month
 
 Once we have the number vaccinated cumulatively for that month, we can drop both 'SASARAN' and 'BELUM VAKSIN'.
 
@@ -186,7 +182,7 @@ Now we will create a function to handle the pre-processing of the data. Mainly t
 
 The following function will apply the months and date, and also apply the rates of change as defined:
 
-(TARGET - NOT VAX) / TARGET
+(TARGET - NOT VAX) / TARGET \* 100
 
 ```{r}
 
@@ -300,9 +296,9 @@ We need to change and modify the following: (From quick research, it appears the
 | Geospatial           | Aspatial                      |
 |----------------------|-------------------------------|
 | BALEKAMBANG          | BALE KAMBANG                  |
-| HALIM PERDANA KUSUMA | HALIM PERDANA KUSUMAH (error) |
+| HALIM PERDANA KUSUMA | HALIM PERDANA KUSUMAH (Error) |
 | JATIPULO             | JATI PULO                     |
-| KRENDANG             | KERENDANG (ERROR)             |
+| KRENDANG             | KERENDANG (Error)             |
 | KRAMATJATI           | KRAMAT JATI                   |
 | PALMERIAM            | PAL MERIAM                    |
 | PINANGRANTI          | PINANG RANTI                  |
@@ -417,15 +413,6 @@ Interestingly, during this period of measure (July), there was an exponential sp
 
 3.  Petamburan
 
-### Plot the rate of change using tmap
-
-```{r}
-#trace_val <- c("2021-07-31", "2021-08-31", "2021-09-30", "2021-10-31", "2021-11-30", "2021-12-31", "2022-01-31", "2022-02-27", "2022-03-31", "2022-04-30", "2022-05-31", "2022-06-30")
-
-#jakarta_combined_long <- combined_jakarta %>% 
-#  pivot_longer(cols=trace_val, names_to="Month_Vac", values_to = #"total_vaccinated_rate")
-```
-
 # Local Gi\* Analysis
 
 Over here we will compute the local Gi\* values for the monthly vaccination rates. Gi\* only works for distance-based matrix and queen contiguity. This is to detect hot/cold spots for villages with high/low covid-19 vaccinations respectively. We will do it in a time-series to understand how the vaccinations are doled out across the country overtime.
@@ -437,13 +424,13 @@ Over here we will compute the local Gi\* values for the monthly vaccination rate
 
 The values represents the intensity of grouping.
 
-**Set the seed for reproducability**
+**Set the seed for reproducebility**
 
 ```{r}
 set.seed(1234)
 ```
 
-#### Create our Spatio-Temporal Cube
+#### Create our Spatial-Temporal Cube
 
 ```{r}
 #Pivot long
@@ -462,7 +449,7 @@ jakarta_combined_ts <- spacetime(jakarta_combined_long, jakarta_village,
                                  .time_col = "Date")
 ```
 
-Check if it's a time cube
+**Check if it's a time cube**
 
 ```{r}
 is_spacetime_cube(jakarta_combined_ts)
@@ -529,13 +516,9 @@ create_gi_plot <- function(date_time) {
     tm_shape(filter(jakarta_HCSA_sig, Date==date_time)) +
     tm_fill("gi_star")+
     tm_borders(alpha=0.4)+
-    tm_layout(main.title = paste("Gi* Vaccination Rates", date_time))
+    tm_layout(main.title = paste("Gi* Vax Rates", date_time))
 }
 ```
-
-::: callout-note
-The original results had most of the areas marked as insignificant. With the southern areas marked as Hot Spot and the Central Areas and some north areas marked as cold spots. But I'm not sure why after running it again (without changing any code), suddenly I get negative gi_star for everything and my p-value are all \< 0.05. The interpretation below is based on the original result I got which I cannot recreate.
-:::
 
 ```{r}
 tmap_arrange(create_gi_plot("2021-07-31"),create_gi_plot("2021-08-31"))
@@ -566,11 +549,11 @@ tmap_arrange(create_gi_plot("2022-05-31"),create_gi_plot("2022-06-30"))
 
 From the start, we can see that some villages from the North, Central, South, East and West Jakarta have high vaccination hot spot clusters, before moving to the southern part of Jakarta which encompasses a portion of East and South Jakarta.
 
-Interestingly, Central Jakarta has the highest cluster of cold spots, where the vaccination rates are low.
+Interestingly, Central Jakarta has the highest cluster of cold spots, where resistance towards the vaccine is high.
 
-There could be a couple of reasons for the observed phenomena, first could be receptiveness. If we assume the vaccinations are doled out equally, we can suggest that the people in Central Jakarta are the least receptive compared to other areas. However, from quick research, it appears that Central Jakarta and South Jakarta has the highest concentration of mid--high wealth individuals, which means its demographic should be relatively the same, but it produces such different results.
+There could be a couple of reasons for the observed phenomena, first could be receptiveness. If we assume the vaccinations are doled out equally, we can suggest that the people in Central Jakarta are the least receptive compared to other areas. However, Central Jakarta and South Jakarta has the highest concentration of mid--high wealth individuals, which means its demographic should be relatively the same, but it produces such different results.
 
-The more likely reason could be because these are disease hot spots, and they evolve over time, and the government is prioritizing areas where it is most ravaged by the virus. This explains the evolution of hot spots from north moving to south.
+The more likely reason could be because these are disease hot spots, and they evolve over time, and the government is prioritizing areas where it is most ravaged by the virus. This explains the evolution of hot spots from north moving to south over time.
 
 # Man-Kendall Test
 
@@ -623,6 +606,10 @@ lenteng_p <- ggplot(data = lenteng,
 ggplotly(lenteng_p)
 ```
 
+Srengseng Sawah and Lenteng Agung have similar upward positive trend. Given its statistical significance from our earlier analysis, we can say that the number of people receiving vaccination has a positive increase in trend over time that stabilized towards the end as most people get vaccinated.
+
+This tells us that most people in these two villages are more receptive and willing towards receiving the vaccine *(assuming vaccine availability is good)* in its cluster.
+
 ### Kebon Kacang
 
 ```{r}
@@ -641,6 +628,10 @@ kebon_p <- ggplot(data = kebon,
 
 ggplotly(kebon_p)
 ```
+
+From the result above, we can say there is a negative downward trend of people receiving the vaccination overtime. Therefore, we can say that the people in Kebon are not only initially resistant towards getting a vaccine, they are becoming **increasingly resistant** *(again assuming vaccine availability is good)*, as the rate of people receiving vaccination continues on a downward spiral. There might be an underlying reason why this is the case. (Misinformation campaigns, lack of vaccine availability, lack of public health service announcements etc)
+
+Together, we can suggest that there might be factors differentiating the villages the government might want to look into and identify the root cause for this difference.
 
 ## Emerging Hotspot Analysis
 
@@ -689,11 +680,11 @@ ggplot(data = ehsa,
   geom_bar()
 ```
 
-From the chart above, we can see that there are more villages with oscilating hotspots class compared to others.
+From the chart above, we can see that there are more villages with oscillating hot spots class compared to others.
 
 ### Visualize EHSA in Jakarta
 
-Now, we will visualize the geographic distribution of the EHSA classes. To do that, we will join together the jakarta_village shape file and the ehsa and also discard all insignificant results \<0.05
+Now, we will visualize the geographic distribution of the EHSA classes. To do that, we will join together the jakarta_village shape file and the ehsa and also discard all insignificant results \<0.05.
 
 ```{r}
 jakarta_ehsa <- jakarta_village %>%
@@ -712,4 +703,18 @@ tm_shape(jakarta_ehsa_sig) +
   tm_borders(alpha = 0.4)
 ```
 
-References:
+### Describe the spatial patterns revealed:
+
+From the graph above, it is immediately clear that the majority of the villages here have oscillating cold and hot spots. Oscillating in this context means there might be fluctuations of people getting vaccines and people not getting vaccines over time. This might suggest a *vaccine availability* problem or either that, a change in vaccine receptiveness/hesitancy, depending on hot or cold spot respectively in these areas.
+
+A notable finding is that there is a sporadic cold spot in Srengseng Sawah, despite a positive trend in Gi\* and the identification of a hot spot in the Man-Kendall test. How is this possible? This contradiction means that this cluster of districts have high vaccination rates in the surrounding area, but it itself is not part of a larger emerging hotspot with increasing vaccination rates as identified by the EHSA chart, as its surrounding are sporadic cold spots. It also indicates that the trend is NOT consistent, as we can tell from the Man-Kendall graph where the trend falls off towards the final time-step.
+
+It might also reveal that vaccine availability is not consistent, even on a village level, despite Jakarta as a whole likely having higher availability compared to other states in Indonesia.
+
+Overall, this highlights the importance of having to use multiple analysis in order to give a clearer picture into understanding the different spatial patterns and trends. It's only with this that we can narrow down the factors contributing to vaccination rates in Jakarta.
+
+### Acknowledgement:
+
+-   Prof Kam for all of his guidance and materials
+
+-   Megan Sim, for code references on the data preparation of both the geospatial and aspatial data
