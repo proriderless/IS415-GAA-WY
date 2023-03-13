@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Tan Wen Yang">
+<meta name="dcterms.date" content="2023-03-11">
+
+<title>IS415-GAA-WY - Take-Home Exercise 3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">IS415-GAA-WY</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercises" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../lessons/lesson2/lesson2_handson.html">
+ <span class="dropdown-text">Hands-on exercise 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../handson-ex/lesson3/hands-on-ex3.html">
+ <span class="dropdown-text">Hands-on exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../handson-ex/lesson4/handson-ex4.html">
+ <span class="dropdown-text">Hands-on exercise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../handson-ex/lesson7/handson-ex07.html">
+ <span class="dropdown-text">Hands-on exercise 7</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../handson-ex/lesson8/handson-ex8.html">
+ <span class="dropdown-text">Hands-on exercise 8</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercise" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">In-class Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercise">    
+        <li>
+    <a class="dropdown-item" href="../../lessons/lesson2/in-class-ex2.html">
+ <span class="dropdown-text">In-class exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass_ex03/inclass_ex03.html">
+ <span class="dropdown-text">In-class exercise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex04/inclass_ex04.html">
+ <span class="dropdown-text">In-class exercise 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex05/inclass_ex05.html">
+ <span class="dropdown-text">In-class exercise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex06/inclass-ex06.html">
+ <span class="dropdown-text">In-class exercise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex07/inclass-ex07.html">
+ <span class="dropdown-text">In-class exercise 7</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex08/inclass-ex08.html">
+ <span class="dropdown-text">In-class exercise 8</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex09/inclass-ex09.html">
+ <span class="dropdown-text">In-class exercise 9</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex10/inclass-ex10.qmd">
+ <span class="dropdown-text">In-class exercise 10</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../inclass-ex/inclass-ex11/inclass-ex11.qmd">
+ <span class="dropdown-text">In-class exercise 11</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercise" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take-Home Exercise</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
+        <li>
+    <a class="dropdown-item" href="../../take-home-ex/take-home-ex01/take-home-ex01.html">
+ <span class="dropdown-text">Take-Home Exercise 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../take-home-ex/take-home-ex02/take-home-ex02.html">
+ <span class="dropdown-text">Take-Home Exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../take-home-ex/take-home-ex03/take-home-ex03.html">
+ <span class="dropdown-text">Take-Home Exercise 3</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#loading-in-all-the-packages-and-data" id="toc-loading-in-all-the-packages-and-data" class="nav-link active" data-scroll-target="#loading-in-all-the-packages-and-data">Loading in all the packages and data</a></li>
+  <li><a href="#geospatial-data" id="toc-geospatial-data" class="nav-link" data-scroll-target="#geospatial-data">Geospatial Data:</a></li>
+  <li><a href="#aspatial-data" id="toc-aspatial-data" class="nav-link" data-scroll-target="#aspatial-data">Aspatial Data</a></li>
+  <li><a href="#locational-factors" id="toc-locational-factors" class="nav-link" data-scroll-target="#locational-factors">Locational Factors:</a></li>
+  <li><a href="#geospatial-locational-source" id="toc-geospatial-locational-source" class="nav-link" data-scroll-target="#geospatial-locational-source">Geospatial Locational Source:</a>
+  <ul class="collapse">
+  <li><a href="#mrtlrt-and-bus-stop-locations" id="toc-mrtlrt-and-bus-stop-locations" class="nav-link" data-scroll-target="#mrtlrt-and-bus-stop-locations">MRT/LRT and Bus Stop Locations</a></li>
+  <li><a href="#onemapsg-service-api" id="toc-onemapsg-service-api" class="nav-link" data-scroll-target="#onemapsg-service-api">OneMapSG Service API</a></li>
+  <li><a href="#process-of-going-through-to-create-the-shp-file" id="toc-process-of-going-through-to-create-the-shp-file" class="nav-link" data-scroll-target="#process-of-going-through-to-create-the-shp-file">Process of going through to create the shp file:</a></li>
+  <li><a href="#load-in-all-the-shp-data" id="toc-load-in-all-the-shp-data" class="nav-link" data-scroll-target="#load-in-all-the-shp-data">Load in all the shp data</a></li>
+  <li><a href="#external-sources" id="toc-external-sources" class="nav-link" data-scroll-target="#external-sources">External Sources</a></li>
+  <li><a href="#load-primary-school-data-with-latlong" id="toc-load-primary-school-data-with-latlong" class="nav-link" data-scroll-target="#load-primary-school-data-with-latlong">Load Primary School Data with Lat/Long</a></li>
+  <li><a href="#load-shopping-malls" id="toc-load-shopping-malls" class="nav-link" data-scroll-target="#load-shopping-malls">Load Shopping Malls</a></li>
+  <li><a href="#data-wrangling-geospatial" id="toc-data-wrangling-geospatial" class="nav-link" data-scroll-target="#data-wrangling-geospatial">Data Wrangling (Geospatial)</a>
+  <ul class="collapse">
+  <li><a href="#remove-z-dimension-for-supermarket-data" id="toc-remove-z-dimension-for-supermarket-data" class="nav-link" data-scroll-target="#remove-z-dimension-for-supermarket-data">Remove ‘Z-Dimension’ for Supermarket Data</a></li>
+  <li><a href="#check-and-change-all-epsg-for-geospatial-data-to-espg-3414" id="toc-check-and-change-all-epsg-for-geospatial-data-to-espg-3414" class="nav-link" data-scroll-target="#check-and-change-all-epsg-for-geospatial-data-to-espg-3414">Check and change all EPSG for Geospatial data to ESPG 3414</a></li>
+  <li><a href="#check-to-make-sure" id="toc-check-to-make-sure" class="nav-link" data-scroll-target="#check-to-make-sure">Check to make sure…</a></li>
+  <li><a href="#remove-all-unnecessary-columns" id="toc-remove-all-unnecessary-columns" class="nav-link" data-scroll-target="#remove-all-unnecessary-columns">Remove all unnecessary columns</a></li>
+  <li><a href="#dealing-with-the-anomaly---mrtlrt" id="toc-dealing-with-the-anomaly---mrtlrt" class="nav-link" data-scroll-target="#dealing-with-the-anomaly---mrtlrt">Dealing with the anomaly - MRT/LRT</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Take-Home Exercise 3</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Tan Wen Yang </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 11, 2023</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">March 11, 2023</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="loading-in-all-the-packages-and-data" class="level3">
+<h3 class="anchored" data-anchor-id="loading-in-all-the-packages-and-data">Loading in all the packages and data</h3>
+<p><strong><em>NOTE: TAKE THE PROF’s MPSZ 2019 DATA FROM INCLASS-EX 09!!!! Rather than 2014</em></strong></p>
+<p>Compile to rds once the data wrangling part is done.</p>
+<p>Geographically weighted methods (REgression / Random FoREST) and Ordinary Least Square Method (Conventional non-geo-weighted linear regression)</p>
+<p>Note that corrplot cannot be loaded (Therefore has to be loaded from package)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>package 'onemapsgapi' successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+    C:\Users\Wen Yang\AppData\Local\Temp\Rtmp8GSxk8\downloaded_packages
+package 'dotenv' successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+    C:\Users\Wen Yang\AppData\Local\Temp\Rtmp8GSxk8\downloaded_packages</code></pre>
+</div>
+</div>
+</section>
+<section id="geospatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="geospatial-data">Geospatial Data:</h3>
+<p>Singapore National Boundary and Master Plan 2014 subzone!</p>
+<ul>
+<li><p>Singapore National Boundary is a polygon feature data showing the national boundary!</p></li>
+<li><p>Master Plan 2014 subzone are information on URA 2014!</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `MP14_SUBZONE_WEB_PL' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 323 features and 15 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
+Projected CRS: SVY21</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>national_boundary <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="st">"CostalOutline"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `CostalOutline' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 60 features and 4 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 2663.926 ymin: 16357.98 xmax: 56047.79 ymax: 50244.03
+Projected CRS: SVY21</code></pre>
+</div>
+</div>
+</section>
+<section id="aspatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="aspatial-data">Aspatial Data</h3>
+<ul>
+<li><p>Resale Flat prices</p>
+<ul>
+<li><p>Training dataset from 1st January 2021 to 31st December 2022</p></li>
+<li><p>Test dataset from 1 January to the last day of February 2023 resale prices For our</p></li>
+</ul></li>
+</ul>
+<p>For our case, we will be using four-room flats for our prediction</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>resale_flat <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/resale-flat-prices-from-jan-2017-onwards.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="locational-factors" class="level3">
+<h3 class="anchored" data-anchor-id="locational-factors">Locational Factors:</h3>
+<p>For our assignment, we will need to look at location for</p>
+<ul>
+<li><p>Proximity to CBD</p></li>
+<li><p>Proximity to Eldercare</p></li>
+<li><p>Proximity to Food court/Hawker</p></li>
+<li><p>Proximity to MRT</p></li>
+<li><p>Proximity to Park</p></li>
+<li><p>Proximity to ‘Good’ primary schools</p></li>
+<li><p>Proximity to Shopping Malls</p></li>
+<li><p>Proximity to supermarket</p></li>
+<li><p>Number of Kindergartens within 350m</p></li>
+<li><p>Number of childcare centers within 350m</p></li>
+<li><p>Number of primary schools within 1km</p></li>
+</ul>
+<p>We start by sourcing some of this data</p>
+</section>
+<section id="geospatial-locational-source" class="level1">
+<h1>Geospatial Locational Source:</h1>
+<section id="mrtlrt-and-bus-stop-locations" class="level3">
+<h3 class="anchored" data-anchor-id="mrtlrt-and-bus-stop-locations">MRT/LRT and Bus Stop Locations</h3>
+<ul>
+<li><p>We can source from: <a href="https://datamall.lta.gov.sg/content/datamall/en/search_datasets.html?searchText=mrt">LTA DataMall MRT/LRT Shapefile</a> (It’s in Polygon!)</p></li>
+<li><p>Bus Stop: <a href="https://datamall.lta.gov.sg/content/datamall/en/search_datasets.html?searchText=bus%20stop">LTA DataMall Bus Stop</a></p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"RapidTransitSystemStation"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `RapidTransitSystemStation' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 220 features and 4 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 6068.209 ymin: 27478.44 xmax: 45377.5 ymax: 47913.58
+Projected CRS: SVY21</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bus_stop <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"BusStop"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `BusStop' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 5159 features and 3 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 3970.122 ymin: 26482.1 xmax: 48284.56 ymax: 52983.82
+Projected CRS: SVY21</code></pre>
+</div>
+</div>
+<p>There is something wrong, the MRT/LRT dataset is giving us polygon type rather than point. Despite the dataset saying it’s point.</p>
+</section>
+<section id="onemapsg-service-api" class="level3">
+<h3 class="anchored" data-anchor-id="onemapsg-service-api">OneMapSG Service API</h3>
+<p>We can extract the following according to their theme on OneMapSG API</p>
+<ul>
+<li><p>Childcare (childcare)</p></li>
+<li><p>Eldercare (eldercare)</p></li>
+<li><p>Hawker Center (Queryname: hawkercentre)</p></li>
+<li><p>Kindergarten (Queryname: Kindergartens)</p></li>
+<li><p>Parks (Queryname: nationalparks)</p></li>
+</ul>
+<p>Extra if we have time to think about:</p>
+<ul>
+<li><p>Libraries (Queryname: libraries)</p></li>
+<li><p>Integrated Screening Programmes (queryname: moh_isp_clinics)</p></li>
+<li><p>Tourist Attractions (Queryname: tourism)</p></li>
+</ul>
+</section>
+<section id="process-of-going-through-to-create-the-shp-file" class="level3">
+<h3 class="anchored" data-anchor-id="process-of-going-through-to-create-the-shp-file">Process of going through to create the shp file:</h3>
+<p>Courtesy of Megan’s work. (The following code chunk will be repeated to create the shp file for all the themes above).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load_dot_env(file=".env")</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#token &lt;- Sys.getenv("TOKEN")</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#themetibble &lt;- get_theme(token, "themename")</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#themetibble</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#themesf &lt;- st_as_sf(themetibble, coords=c("Lng", "Lat"), crs=4326)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#st_write(themesf, "themename.shp")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="load-in-all-the-shp-data" class="level3">
+<h3 class="anchored" data-anchor-id="load-in-all-the-shp-data">Load in all the shp data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>childcare <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"childcare"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `childcare' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 1925 features and 5 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6878 ymin: 1.247759 xmax: 103.9897 ymax: 1.462134
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>eldercare <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"eldercare"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `eldercare' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 133 features and 4 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.7119 ymin: 1.271472 xmax: 103.9561 ymax: 1.439561
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>hawker_centre <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"hawkercentre"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `hawkercentre' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 125 features and 18 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6974 ymin: 1.272716 xmax: 103.9882 ymax: 1.449017
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>kindergarten <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"kindergartens"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `kindergartens' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 448 features and 5 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6887 ymin: 1.247759 xmax: 103.9717 ymax: 1.455452
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>parks <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"nationalparks"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `nationalparks' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 421 features and 2 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6929 ymin: 1.214491 xmax: 104.0538 ymax: 1.462094
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>libraries <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"libraries"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `libraries' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 31 features and 13 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.7045 ymin: 1.263922 xmax: 103.9494 ymax: 1.448197
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>isp_clinics <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"moh_isp_clinics"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `moh_isp_clinics' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 378 features and 15 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6907 ymin: 1.26397 xmax: 103.9903 ymax: 1.456037
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>tourism <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"tourism"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `tourism' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 109 features and 15 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.684 ymin: 1.223 xmax: 103.974 ymax: 1.447
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+</section>
+<section id="external-sources" class="level3">
+<h3 class="anchored" data-anchor-id="external-sources">External Sources</h3>
+<ul>
+<li><p>Supermarkets (Source: <a href="https://dataportal.asia/dataset/192501037_supermarkets/resource/3933d0d7-a795-4c41-b611-e0e4f4697e54">Dataportal</a>)</p></li>
+<li><p>Primary School (<a href="https://en.wikipedia.org/wiki/List_of_primary_schools_in_Singapore">Wikipedia</a>, Reverse Geocoded using OneMap API)</p></li>
+<li><p>Top Primary Schools (We will pick the top 10 based off <a href="https://schlah.com/primary-schools">SchLah’s</a> dataset)</p></li>
+<li><p>Malls (Taken from this <a href="https://github.com/ValaryLim/Mall-Coordinates-Web-Scraper">dataset</a>) [NOTE: SVY21]</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>supermarkets <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/supermarkets.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `SUPERMARKETS' from data source 
+  `D:\Users\Wen Yang\Documents\wyt05\IS415-GAA-WY\take-home-ex\take-home-ex03\data\geospatial\supermarkets.kml' 
+  using driver `KML'
+Simple feature collection with 526 features and 2 fields
+Geometry type: POINT
+Dimension:     XYZ
+Bounding box:  xmin: 103.6258 ymin: 1.24715 xmax: 104.0036 ymax: 1.461526
+z_range:       zmin: 0 zmax: 0
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+</section>
+<section id="load-primary-school-data-with-latlong" class="level3">
+<h3 class="anchored" data-anchor-id="load-primary-school-data-with-latlong">Load Primary School Data with Lat/Long</h3>
+<p>The lat/long are taken from OneMapSG API</p>
+<p>Top 10 schools as well, dervied from schlah</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>primary_sch <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/primary_school_geo.csv"</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>top10_pri_sch <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/top_10_primary_school_geo.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="load-shopping-malls" class="level3">
+<h3 class="anchored" data-anchor-id="load-shopping-malls">Load Shopping Malls</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>shopping_mall <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/shopping_mall.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="data-wrangling-geospatial" class="level2">
+<h2 class="anchored" data-anchor-id="data-wrangling-geospatial">Data Wrangling (Geospatial)</h2>
+<p>List of task to do:</p>
+<ul>
+<li><p>Convert some remaining data to Geospatial</p></li>
+<li><p>Convert multipoint to point data (Removing the ‘z’) for supermarket</p></li>
+<li><p>Convert all if not already in SVY21 into SVY21 (3414)</p></li>
+<li><p>Remove all unnecessary columns</p></li>
+<li><p>Check for null values</p></li>
+</ul>
+<p>Convert all of our datasets from CSV to Geospatial (shp)</p>
+<ul>
+<li><p>Primary Schools</p></li>
+<li><p>Shopping Malls</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>primary_sch_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(primary_sch, <span class="at">coords=</span><span class="fu">c</span>(<span class="st">"LONG"</span>, <span class="st">"LAT"</span>), <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>top_primary_sch_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(top10_pri_sch, <span class="at">coords=</span><span class="fu">c</span>(<span class="st">"LONG"</span>, <span class="st">"LAT"</span>), <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>shopping_mall_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(shopping_mall, <span class="at">coords=</span><span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="remove-z-dimension-for-supermarket-data" class="level3">
+<h3 class="anchored" data-anchor-id="remove-z-dimension-for-supermarket-data">Remove ‘Z-Dimension’ for Supermarket Data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>supermarkets <span class="ot">&lt;-</span> <span class="fu">st_zm</span>(supermarkets)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="check-and-change-all-epsg-for-geospatial-data-to-espg-3414" class="level3">
+<h3 class="anchored" data-anchor-id="check-and-change-all-epsg-for-geospatial-data-to-espg-3414">Check and change all EPSG for Geospatial data to ESPG 3414</h3>
+<p>We know the following are not in 3414 as we’ve mutated them into WGS84 earlier</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>childcare3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(childcare, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>eldercare3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(eldercare, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>hawker_centre3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(hawker_centre, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>kindergarten3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(kindergarten, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>parks3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(parks, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>libraries3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(libraries, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>isp_clinics3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(isp_clinics, <span class="at">crs=</span><span class="dv">3414</span>)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>tourism3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(tourism, <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="check-others" class="level4">
+<h4 class="anchored" data-anchor-id="check-others">Check others:</h4>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Primary School SF</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Top 10 Primary School SF</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Shopping Mall SF</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">Supermarkets</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(primary_sch_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(top_primary_sch_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(shopping_mall_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(supermarkets)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: WGS 84 
+  wkt:
+GEOGCRS["WGS 84",
+    DATUM["World Geodetic System 1984",
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="looks-like-supermarket-is-still-in-wgs84-lets-fix-that" class="level4">
+<h4 class="anchored" data-anchor-id="looks-like-supermarket-is-still-in-wgs84-lets-fix-that">Looks like Supermarket is still in WGS84, let’s fix that</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>supermarkets3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(supermarkets, <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="check-to-make-sure" class="level3">
+<h3 class="anchored" data-anchor-id="check-to-make-sure">Check to make sure…</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(supermarkets3414)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+</section>
+<section id="remove-all-unnecessary-columns" class="level3">
+<h3 class="anchored" data-anchor-id="remove-all-unnecessary-columns">Remove all unnecessary columns</h3>
+<p>After glimpsing at the sf dataframe, we are going to remove all useless columns.</p>
+<ul>
+<li><p>Information such as addresses/descriptions are not necessary, as all we need are the point data</p></li>
+<li><p>We will keep the name for identification purposes</p></li>
+</ul>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Childcare</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Eldercare</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">Hawker Centre</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">ISP Clinics</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">Kindergarten</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-6-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-6" role="tab" aria-controls="tabset-2-6" aria-selected="false">Libraries</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-7-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-7" role="tab" aria-controls="tabset-2-7" aria-selected="false">MRT/LRT</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-8-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-8" role="tab" aria-controls="tabset-2-8" aria-selected="false">Parks</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-9-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-9" role="tab" aria-controls="tabset-2-9" aria-selected="false">Primary School</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-10-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-10" role="tab" aria-controls="tabset-2-10" aria-selected="false">Supermarkets</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-11-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-11" role="tab" aria-controls="tabset-2-11" aria-selected="false">Tourism Data</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<p>We will keep name and geometry</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>childcare3414 <span class="ot">&lt;-</span> childcare3414 <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Check result</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>childcare3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 1925 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 11810.03 ymin: 25596.33 xmax: 45404.24 ymax: 49300.88
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                             NAME                  geometry
+1  APOLLO INTERNATIONAL PRESCHOOL PRIVATE LIMITED POINT (40985.94 33848.38)
+2                    APPLE TREE PLAYHOUSE PTE LTD POINT (28308.65 45530.47)
+3  Appleland Montessori Child Care Centre Pte Ltd POINT (17828.84 36607.36)
+4                             APPLELAND PLAYHOUSE POINT (25579.73 29221.89)
+5              APRICOT ACADEMY (LAGUNA) PTE. LTD. POINT (38981.02 32483.41)
+6                                 Arise Preschool    POINT (21588.47 36307)
+7        Artemis Preskool @ Tampines Pte Ltd (CC)  POINT (39239.78 37501.4)
+8                    Artemis Preskool @ Woodleigh POINT (32389.52 35403.72)
+9                     ARTS JUNIOR MONTESSORI  LLP POINT (25554.36 30090.82)
+10                   Arts Kidz Pre-School Pte Ltd    POINT (28004.17 28442)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<p>Same thing, name and geometry</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>eldercare3414 <span class="ot">&lt;-</span> eldercare3414 <span class="sc">%&gt;%</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Check result</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>eldercare3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 133 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 14481.92 ymin: 28218.43 xmax: 41665.14 ymax: 46804.9
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                                           NAME
+1                                  Yuhua Senior Activity Centre
+2                                          THK SAC @ Kaki Bukit
+3                                            THK SAC @ Boon Lay
+4                        PEACE-Connect Senior Activity Centre@5
+5                                        THK SAC @ Beo Crescent
+6                                      Silver ACE @ Bukit Merah
+7  Lions Befrienders Senior Activity Centre @ Tampines Blk 499C
+8                    Care Corner Senior Activity Centre (WL569)
+9           Fei Yue Senior Activity Centre (Bukit Batok Branch)
+10       COMNET Senior Activity Centre @ 182 Rivervale Crescent
+                    geometry
+1  POINT (16614.08 36639.12)
+2  POINT (38803.81 35098.77)
+3  POINT (14481.92 36357.61)
+4  POINT (31505.35 31853.52)
+5  POINT (27218.35 30135.49)
+6  POINT (27278.94 29350.17)
+7  POINT (41665.14 37956.92)
+8  POINT (23147.94 45761.17)
+9  POINT (18820.58 36396.32)
+10  POINT (36446.37 41376.9)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>hawker_centre3414 <span class="ot">&lt;-</span> hawker_centre3414 <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>hawker_centre3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 125 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 12874.19 ymin: 28355.97 xmax: 45241.4 ymax: 47850.43
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                   NAME                  geometry
+1           Market Street Hawker Centre  POINT (29874.82 29650.7)
+2          Marsiling Mall Hawker Centre POINT (22042.51 46139.03)
+3          Margaret Drive Hawker Centre  POINT (24816.7 31094.91)
+4       Fernvale Hawker Centre &amp; Market  POINT (32867.9 41500.77)
+5             One Punggol Hawker Centre POINT (35955.52 43336.13)
+6          Bukit Canberra Hawker Centre POINT (26794.39 47850.43)
+7                   Senja Hawker Centre POINT (19953.85 41008.06)
+8                Buangkok Hawker Centre POINT (34575.37 40482.99)
+9        Bukit Batok West Hawker Centre  POINT (17817.9 37478.45)
+10 Telok Blangah Hawker Centre &amp; Market     POINT (25191 28414.9)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>isp_clinics3414 <span class="ot">&lt;-</span> isp_clinics3414 <span class="sc">%&gt;%</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>isp_clinics3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 378 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 12130.5 ymin: 27388.9 xmax: 45475.65 ymax: 48626.7
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                  NAME                  geometry
+1             HEALTHWAY MEDICAL CLINIC POINT (35625.67 40809.19)
+2             HEALTHWAY MEDICAL CLINIC  POINT (31090.4 33520.89)
+3             HEALTHWAY MEDICAL CLINIC POINT (40903.43 39446.08)
+4             HEALTHWAY MEDICAL CLINIC POINT (41384.47 37152.14)
+5             HEALTHWAY MEDICAL CLINIC POINT (27371.14 45806.89)
+6             HEALTHWAY MEDICAL CLINIC POINT (28014.68 45473.31)
+7             HEALTHWAY MEDICAL CLINIC POINT (26462.45 47759.61)
+8  HEALTHWISE MEDICAL CLINIC &amp; SURGERY POINT (33725.38 32238.48)
+9                    HL CLINIC PTE LTD  POINT (26451.91 28874.8)
+10           HO MEDICAL CENTRE PTE LTD POINT (21103.55 32951.85)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-5-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>kindergarten3414 <span class="ot">&lt;-</span> kindergarten3414 <span class="sc">%&gt;%</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>kindergarten3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 448 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 11909.7 ymin: 25596.33 xmax: 43395.47 ymax: 48562.06
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                                         NAME
+1  PCF Sparkletots Preschool @ Cheng San-Seletar Blk 435 (KN)
+2  PCF Sparkletots Preschool @ Cheng San-Seletar Blk 533 (KN)
+3  PCF Sparkletots Preschool @ Cheng San-Seletar Blk 556 (DS)
+4         PCF Sparkletots Preschool @ Chong Pang Blk 107 (KN)
+5         PCF Sparkletots Preschool @ Chong Pang Blk 122 (KN)
+6       PCF Sparkletots Preschool @ Chua Chu Kang Blk 10 (KN)
+7           PCF Sparkletots Preschool @ Clementi Blk 330 (DS)
+8              PCF Sparkletots Preschool @ Eunos Blk 616 (KN)
+9           PCF Sparkletots Preschool @ Fengshan Blk 126 (DS)
+10         PCF Sparkletots Preschool @ Fernvale Blk 416A (DS)
+                    geometry
+1  POINT (30325.45 38859.25)
+2  POINT (30190.51 39574.18)
+3   POINT (30705.05 39337.9)
+4  POINT (27354.73 45992.92)
+5  POINT (27755.87 46300.26)
+6  POINT (19307.62 40271.08)
+7  POINT (20706.39 32892.83)
+8   POINT (37089.3 34892.34)
+9  POINT (39752.13 34487.87)
+10 POINT (33190.98 41392.37)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-6" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-6-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>libraries3414 <span class="ot">&lt;-</span> libraries3414 <span class="sc">%&gt;%</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>libraries3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 31 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 13665.24 ymin: 27383.57 xmax: 40922.89 ymax: 47759.75
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                           NAME                  geometry
+1  Choa Chu Kang Public Library POINT (18175.64 40767.45)
+2      Punggol Regional Library POINT (36014.52 43461.09)
+3     Ang Mo Kio Public Library POINT (29364.62 39642.82)
+4          Bedok Public Library POINT (38947.87 34357.48)
+5         Bishan Public Library POINT (29727.41 36885.15)
+6    Bukit Batok Public Library POINT (18646.83 36869.57)
+7  Bukit Panjang Public Library POINT (20324.67 40211.98)
+8        Central Public Library POINT (30327.79 31087.66)
+9      Cheng San Public Library  POINT (34728.1 39397.71)
+10      Clementi Public Library  POINT (20319.52 33038.5)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-7" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-7-tab">
+<p>We only keep STN_NAM_DE and geometry</p>
+<p>Note that the file is in polygon format, rather than point. Might have to deal with it.</p>
+<p>https://stackoverflow.com/questions/52522872/r-sf-package-centroid-within-polygon</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt <span class="ot">&lt;-</span> mrt_lrt <span class="sc">%&gt;%</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'STN_NAM_DE'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Check</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 220 features and 1 field
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 6068.209 ymin: 27478.44 xmax: 45377.5 ymax: 47913.58
+Projected CRS: SVY21
+First 10 features:
+                STN_NAM_DE                       geometry
+1    ESPLANADE MRT STATION POLYGON ((30566.07 30621.21...
+2   PAYA LEBAR MRT STATION POLYGON ((34495.6 33384.44,...
+3  DHOBY GHAUT MRT STATION POLYGON ((29293.51 31312.53...
+4       DAKOTA MRT STATION POLYGON ((34055.08 32290.62...
+5     LAVENDER MRT STATION POLYGON ((31236.5 32085.76,...
+6      RENJONG LRT STATION POLYGON ((34382.66 40949.64...
+7        DOVER MRT STATION POLYGON ((21987.25 32576.91...
+8      HOUGANG MRT STATION POLYGON ((34585.74 39132.47...
+9      PHOENIX LRT STATION POLYGON ((19602.92 40048.64...
+10    ALJUNIED MRT STATION POLYGON ((33422.35 33158.32...</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-8" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-8-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>parks3414 <span class="ot">&lt;-</span> parks3414 <span class="sc">%&gt;%</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>parks3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 421 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 12374.75 ymin: 21917.81 xmax: 52533.09 ymax: 49296.46
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                    NAME                  geometry
+1      ENG KONG PLACE FC POINT (20647.02 35214.35)
+2         JANGGUS GARDEN POINT (28409.23 48791.68)
+3     JLN LIMAU MANIS PG POINT (40880.22 34107.22)
+4         GARDEN VIEW PG POINT (31600.01 38049.84)
+5       THOMSON GREEN PG POINT (27919.96 40074.49)
+6           JLN RIANG PG POINT (31789.37 36584.45)
+7   MEI HWAN CRESCENT PG POINT (31162.69 37212.14)
+8          FULTON AVE PG   POINT (28026.6 38242.5)
+9      MIMOSA TERRACE PG POINT (31016.83 40664.48)
+10 JLN GENENG INTERIM PK  POINT (33295.7 37270.28)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-9" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-9-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>primary_sch_sf <span class="ot">&lt;-</span> primary_sch_sf <span class="sc">%&gt;%</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'Primary school'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>primary_sch_sf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 181 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 103.6878 ymin: 1.274958 xmax: 103.9628 ymax: 1.456608
+Projected CRS: SVY21 / Singapore TM
+# A tibble: 181 × 2
+   `Primary school`                          geometry
+   &lt;chr&gt;                                  &lt;POINT [m]&gt;
+ 1 Admiralty Primary School          (103.8 1.442635)
+ 2 Ahmad Ibrahim Primary School   (103.8329 1.433153)
+ 3 Ai Tong School                  (103.833 1.360583)
+ 4 Alexandra Primary School       (103.8244 1.291334)
+ 5 Anchor Green Primary School     (103.8872 1.39037)
+ 6 Anderson Primary School        (103.8414 1.384264)
+ 7 Ang Mo Kio Primary School      (103.8396 1.369322)
+ 8 Anglo-Chinese School (Junior)    (103.841 1.30935)
+ 9 Anglo-Chinese School (Primary) (103.8356 1.318371)
+10 Angsana Primary School         (103.9518 1.348553)
+# … with 171 more rows</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-10" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-10-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>supermarkets3414 <span class="ot">&lt;-</span> supermarkets3414 <span class="sc">%&gt;%</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'Name'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>supermarkets3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 526 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 4901.188 ymin: 25529.08 xmax: 46948.22 ymax: 49233.6
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+     Name                  geometry
+1   kml_1 POINT (35561.22 42685.17)
+2   kml_2 POINT (32184.01 32947.46)
+3   kml_3 POINT (33903.48 39480.46)
+4   kml_4 POINT (37083.82 35017.47)
+5   kml_5  POINT (41320.3 37283.82)
+6   kml_6 POINT (41384.47 37152.14)
+7   kml_7 POINT (30186.63 38602.77)
+8   kml_8 POINT (28380.83 38842.16)
+9   kml_9 POINT (34383.76 37311.19)
+10 kml_10 POINT (29010.23 45755.51)</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-2-11" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-11-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>tourism3414 <span class="ot">&lt;-</span> tourism3414 <span class="sc">%&gt;%</span></span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'NAME'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>tourism3414</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 109 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 11380.23 ymin: 22858.67 xmax: 43659.54 ymax: 47627.69
+Projected CRS: SVY21 / Singapore TM
+First 10 features:
+                                                       NAME
+1                                National Gallery Singapore
+2                   Sultan Mosque (Masjid Sultan) Singapore
+3           Sri Mariamman Temple: Hindu Temple in Singapore
+4                              Armenian Church in Singapore
+5                                         CHIJMES Singapore
+6  St Andrewâ??s Cathedral- Singapore Architecture Landmark
+7                                         Kreta Ayer Square
+8                                  Albert Mall Trishaw Park
+9                                     Chinatown Food Street
+10                     Chinatown Heritage Centre, Singapore
+                    geometry
+1  POINT (30007.41 30267.17)
+2  POINT (30877.14 31594.08)
+3  POINT (29342.34 29382.57)
+4   POINT (29818.66 30598.9)
+5  POINT (30043.47 30820.05)
+6  POINT (30113.58 30488.32)
+7   POINT (29142.6 29293.89)
+8  POINT (30244.32 31323.04)
+9  POINT (29165.65 29443.75)
+10 POINT (29227.71 29603.72)</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="dealing-with-the-anomaly---mrtlrt" class="level3">
+<h3 class="anchored" data-anchor-id="dealing-with-the-anomaly---mrtlrt">Dealing with the anomaly - MRT/LRT</h3>
+<p>Despite it saying that’s point data, it gives polygon data, therefore we need to convert the polygon into point data. Unfortunately, there appears to be an issue that causes st_make_valid to not work, due to missing data within the polygon (There is an ‘na’).</p>
+<p>Thus, we’ll take this chance to do some fine tuning and make use of OneMapSG to return us the correct coordinates. We will also remove all ‘depots’ as they are not considered MRT/LRTs for our dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt_new_set <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/mrt_lrt_lat_long.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Convert into an SF Object</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt_ns_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(mrt_lrt_new_set, <span class="at">coords=</span><span class="fu">c</span>(<span class="st">"LONG"</span>, <span class="st">"LAT"</span>), <span class="at">crs=</span><span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>mrt_lrt_ns_sf <span class="ot">&lt;-</span> mrt_lrt_ns_sf <span class="sc">%&gt;%</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">'STN_NAM_DE'</span>, <span class="st">'geometry'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Data Wrangling (Aspatial)</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
