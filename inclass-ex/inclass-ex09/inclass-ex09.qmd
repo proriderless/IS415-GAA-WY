@@ -1,0 +1,164 @@
+---
+title: "In-class Exercise 9: Random Forest"
+date: "6 March 2023"
+date-modified: "6 March 2023"
+author: "Tan Wen Yang"
+execute: 
+  echo: true
+  eval: false
+  warning: false
+editor: visual
+---
+
+First 4 is enough for ML
+
+```{r}
+pacman::p_load(sf, GWmodel, SpatialML, tidyverse, tmap, ggpubr, olsrr, tidymodels)
+#if tidymodels got problem just use rsample
+```
+
+Preparing data:
+
+```{r}
+mdata <- read_rds("data/aspatial/mdata.rds")
+```
+
+```{r}
+mdata
+```
+
+### Split train/test data:
+
+```{r}
+set.seed(1234)
+resale_split <- initial_split(mdata, prop = 6.5/10)
+train_data <- training(resale_split)
+test_data <- testing(resale_split)
+```
+
+```{r}
+write_rds(train_data, "data/model/train_data.rds")
+write_rds(test_data, "data/model/test_data.rds")
+```
+
+Computing correlation matrix
+
+```{r}
+mdata_nogeo <- mdata %>%
+  st_drop_geometry()
+corrplot::corrplot(cor(mdata_nogeo[,2:17]), 
+                   diag=FALSE,
+                   type="upper")
+```
+
+### Building a non-spatial multiple linear regression
+
+```{r}
+price_mlr <- lm(resale_price ~ floor_area_sqm + storey_order + remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL + PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN + WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + WITHIN_1KM_PRISCH, data=train_data)
+summary(price_mlr)
+```
+
+Write RDS
+
+```{r}
+#| eval: false
+#write_rds(price_mlr, "data/model/price_mlr.rds")
+```
+
+Converting the sf data.frame to Spatialpointdataframe
+
+```{r}
+train_data_sp <- as_Spatial(train_data)
+train_data_sp
+```
+
+Computing Adaptive/fixed bandwidth
+
+```{r}
+```
+
+Preparing Coordinate data
+
+Extracting coordinates coordinates data
+
+```{r}
+coords <- st_coordinates(mdata)
+coords_train <- st_coordinates(train_data)
+coords_test <- st_coordinates(test_data)
+```
+
+```{r}
+coords_train <- write_rds(coords_train, "data/model/coords_trains.rds")
+coords_test <- write_rds(coords_test, "data/model/coords_test.rds")
+```
+
+Dropping geometry field
+
+```{r}
+train_data <- train_data %>%
+  st_drop_geometry()
+```
+
+Calibrating Random Forest
+
+```{r}
+set.seed(1234)
+rf <- ranger(resale_price ~ floor_area_sqm + storey_order + remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL + PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN + WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + WITHIN_1KM_PRISCH, data=train_data)
+```
+
+To evaluate performance: Look at R2 and residual sum of error (non-square) and MSE (sum of squared error) - need to square-root to compare.
+
+```{r}
+print(rf)
+```
+
+### Geographic random forest model using grf
+
+The bw 55 is CALCULATED!! (closest 55 transaction point / neighbour for that point we have)
+
+Look at the SpatialML documentation for more info
+
+How to get bandwidth:
+
+-   grf.bw use this function to get the bandwidth
+
+```{r}
+gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order + remaining_lease_mths + PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER + PROX_MRT + PROX_PARK + PROX_MALL + PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN + WITHIN_350M_CHILDCARE + WITHIN_350M_BUS + WITHIN_1KM_PRISCH, 
+                     dframe=train_data,
+                     bw=55,
+                     kernel="adaptive",
+                     coords=coords_train)
+```
+
+It gives Not OBB nd obb results. First part is for explanatory model, the second section i for prediction/models. We are looking at AIC model to compare.
+
+Save model
+
+```{r}
+write_rds(gwRF_adaptive, "data/model/gwRF_adaptive.rds")
+```
+
+Read model
+
+```{r}
+gwRF_adaptive <- read_rds("data/model/gwRF_adaptive.rds")
+```
+
+Variable importances will tell us which variable contributes the most to the model (information gain)
+
+Make the variable importance section into a dataframe
+
+```{r}
+vi_df <- as.data.frame(gwRF_adaptive$Global.Model$variable.importance)
+```
+
+Can use DT Table or DT Summary to make it nice
+
+Fitting the Test Data:
+
+The code chunk will be used to combine the test data with its corresponding coordinates data.
+
+```{r}
+test_data <- cbind(test_data, coords_test) %>%
+  st_drop_geometry()
+```

@@ -12,6 +12,12 @@ editor: visual
 
 ### Loading in all the packages and data
 
+***NOTE: TAKE THE PROF's MPSZ 2019 DATA FROM INCLASS-EX 09!!!! Rather than 2014***
+
+Compile to rds once the data wrangling part is done.
+
+Geographically weighted methods (REgression / Random FoREST) and Ordinary Least Square Method (Conventional non-geo-weighted linear regression)
+
 Note that corrplot cannot be loaded (Therefore has to be loaded from package)
 
 ```{r}
