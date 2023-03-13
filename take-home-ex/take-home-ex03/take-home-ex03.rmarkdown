@@ -1,0 +1,504 @@
+---
+title: "Take-Home Exercise 3"
+date: "11 March 2023"
+date-modified: "11 March 2023"
+author: "Tan Wen Yang"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual
+---
+
+
+### Loading in all the packages and data
+
+***NOTE: TAKE THE PROF's MPSZ 2019 DATA FROM INCLASS-EX 09!!!! Rather than 2014***
+
+Compile to rds once the data wrangling part is done.
+
+Geographically weighted methods (REgression / Random FoREST) and Ordinary Least Square Method (Conventional non-geo-weighted linear regression)
+
+Note that corrplot cannot be loaded (Therefore has to be loaded from package)
+
+
+```{r}
+pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv)
+```
+
+
+### Geospatial Data:
+
+Singapore National Boundary and Master Plan 2014 subzone!
+
+-   Singapore National Boundary is a polygon feature data showing the national boundary!
+
+-   Master Plan 2014 subzone are information on URA 2014!
+
+
+```{r}
+mpsz <- st_read(dsn="data/geospatial", "MP14_SUBZONE_WEB_PL")
+national_boundary <- st_read(dsn="data/geospatial", "CostalOutline")
+```
+
+
+### Aspatial Data
+
+-   Resale Flat prices
+
+    -   Training dataset from 1st January 2021 to 31st December 2022
+
+    -   Test dataset from 1 January to the last day of February 2023 resale prices For our
+
+For our case, we will be using four-room flats for our prediction
+
+
+```{r}
+resale_flat <- read_csv("data/aspatial/resale-flat-prices-from-jan-2017-onwards.csv")
+```
+
+
+### Locational Factors:
+
+For our assignment, we will need to look at location for
+
+-   Proximity to CBD
+
+-   Proximity to Eldercare
+
+-   Proximity to Food court/Hawker
+
+-   Proximity to MRT
+
+-   Proximity to Park
+
+-   Proximity to 'Good' primary schools
+
+-   Proximity to Shopping Malls
+
+-   Proximity to supermarket
+
+-   Number of Kindergartens within 350m
+
+-   Number of childcare centers within 350m
+
+-   Number of primary schools within 1km
+
+We start by sourcing some of this data
+
+# Geospatial Locational Source:
+
+### MRT/LRT and Bus Stop Locations
+
+-   We can source from: [LTA DataMall MRT/LRT Shapefile](https://datamall.lta.gov.sg/content/datamall/en/search_datasets.html?searchText=mrt) (It's in Polygon!)
+
+-   Bus Stop: [LTA DataMall Bus Stop](https://datamall.lta.gov.sg/content/datamall/en/search_datasets.html?searchText=bus%20stop)
+
+
+```{r}
+mrt_lrt <- st_read(dsn="data/geospatial", layer="RapidTransitSystemStation")
+bus_stop <- st_read(dsn="data/geospatial", layer="BusStop")
+```
+
+
+There is something wrong, the MRT/LRT dataset is giving us polygon type rather than point. Despite the dataset saying it's point.
+
+### OneMapSG Service API
+
+We can extract the following according to their theme on OneMapSG API
+
+-   Childcare (childcare)
+
+-   Eldercare (eldercare)
+
+-   Hawker Center (Queryname: hawkercentre)
+
+-   Kindergarten (Queryname: Kindergartens)
+
+-   Parks (Queryname: nationalparks)
+
+Extra if we have time to think about:
+
+-   Libraries (Queryname: libraries)
+
+-   Integrated Screening Programmes (queryname: moh_isp_clinics)
+
+-   Tourist Attractions (Queryname: tourism)
+
+### Process of going through to create the shp file:
+
+Courtesy of Megan's work. (The following code chunk will be repeated to create the shp file for all the themes above).
+
+
+```{r}
+#load_dot_env(file=".env")
+#token <- Sys.getenv("TOKEN")
+#themetibble <- get_theme(token, "themename")
+#themetibble
+#themesf <- st_as_sf(themetibble, coords=c("Lng", "Lat"), crs=4326)
+#st_write(themesf, "themename.shp")
+```
+
+
+### Load in all the shp data
+
+
+```{r}
+childcare <- st_read(dsn="data/geospatial", layer="childcare")
+eldercare <- st_read(dsn="data/geospatial", layer="eldercare")
+hawker_centre <- st_read(dsn="data/geospatial", layer="hawkercentre")
+kindergarten <- st_read(dsn="data/geospatial", layer="kindergartens")
+parks <- st_read(dsn="data/geospatial", layer="nationalparks")
+libraries <- st_read(dsn="data/geospatial", layer="libraries")
+isp_clinics <- st_read(dsn="data/geospatial", layer="moh_isp_clinics")
+tourism <- st_read(dsn="data/geospatial", layer="tourism")
+```
+
+
+### External Sources
+
+-   Supermarkets (Source: [Dataportal](https://dataportal.asia/dataset/192501037_supermarkets/resource/3933d0d7-a795-4c41-b611-e0e4f4697e54))
+
+-   Primary School ([Wikipedia](https://en.wikipedia.org/wiki/List_of_primary_schools_in_Singapore), Reverse Geocoded using OneMap API)
+
+-   Top Primary Schools (We will pick the top 10 based off [SchLah's](https://schlah.com/primary-schools) dataset)
+
+-   Malls (Taken from this [dataset](https://github.com/ValaryLim/Mall-Coordinates-Web-Scraper)) \[NOTE: SVY21\]
+
+
+```{r}
+supermarkets <- st_read("data/geospatial/supermarkets.kml")
+```
+
+
+### Load Primary School Data with Lat/Long
+
+The lat/long are taken from OneMapSG API
+
+Top 10 schools as well, dervied from schlah
+
+
+```{r}
+primary_sch <- read_csv("data/aspatial/primary_school_geo.csv")
+top10_pri_sch <- read_csv("data/aspatial/top_10_primary_school_geo.csv")
+```
+
+
+### Load Shopping Malls
+
+
+```{r}
+shopping_mall <- read_csv("data/aspatial/shopping_mall.csv")
+```
+
+
+## Data Wrangling (Geospatial)
+
+List of task to do:
+
+-   Convert some remaining data to Geospatial
+
+-   Convert multipoint to point data (Removing the 'z') for supermarket
+
+-   Convert all if not already in SVY21 into SVY21 (3414)
+
+-   Remove all unnecessary columns
+
+-   Check for null values
+
+Convert all of our datasets from CSV to Geospatial (shp)
+
+-   Primary Schools
+
+-   Shopping Malls
+
+
+```{r}
+primary_sch_sf <- st_as_sf(primary_sch, coords=c("LONG", "LAT"), crs=3414)
+top_primary_sch_sf <- st_as_sf(top10_pri_sch, coords=c("LONG", "LAT"), crs=3414)
+```
+
+```{r}
+shopping_mall_sf <- st_as_sf(shopping_mall, coords=c("longitude", "latitude"), crs=3414)
+```
+
+
+### Remove 'Z-Dimension' for Supermarket Data
+
+
+```{r}
+supermarkets <- st_zm(supermarkets)
+```
+
+
+### Check and change all EPSG for Geospatial data to ESPG 3414
+
+We know the following are not in 3414 as we've mutated them into WGS84 earlier
+
+
+```{r}
+childcare3414 <- st_transform(childcare, crs=3414)
+eldercare3414 <- st_transform(eldercare, crs=3414)
+hawker_centre3414 <- st_transform(hawker_centre, crs=3414)
+kindergarten3414 <- st_transform(kindergarten, crs=3414)
+parks3414 <- st_transform(parks, crs=3414)
+libraries3414 <- st_transform(libraries, crs=3414)
+isp_clinics3414 <- st_transform(isp_clinics, crs=3414)
+tourism3414 <- st_transform(tourism, crs=3414)
+```
+
+
+#### Check others:
+
+::: panel-tabset
+## Primary School SF
+
+
+```{r}
+st_crs(primary_sch_sf)
+```
+
+
+## Top 10 Primary School SF
+
+
+```{r}
+st_crs(top_primary_sch_sf)
+```
+
+
+## Shopping Mall SF
+
+
+```{r}
+st_crs(shopping_mall_sf)
+```
+
+
+## Supermarkets
+
+
+```{r}
+st_crs(supermarkets)
+```
+
+:::
+
+#### Looks like Supermarket is still in WGS84, let's fix that
+
+
+```{r}
+supermarkets3414 <- st_transform(supermarkets, crs=3414)
+```
+
+
+### Check to make sure...
+
+
+```{r}
+st_crs(supermarkets3414)
+```
+
+
+### Remove all unnecessary columns
+
+After glimpsing at the sf dataframe, we are going to remove all useless columns.
+
+-   Information such as addresses/descriptions are not necessary, as all we need are the point data
+
+-   We will keep the name for identification purposes
+
+::: panel-tabset
+## Childcare
+
+We will keep name and geometry
+
+
+```{r}
+childcare3414 <- childcare3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+
+Check result
+
+
+```{r}
+childcare3414
+```
+
+
+## Eldercare
+
+Same thing, name and geometry
+
+
+```{r}
+eldercare3414 <- eldercare3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+
+Check result
+
+
+```{r}
+eldercare3414
+```
+
+
+## Hawker Centre
+
+
+```{r}
+hawker_centre3414 <- hawker_centre3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+hawker_centre3414
+```
+
+
+## ISP Clinics
+
+
+```{r}
+isp_clinics3414 <- isp_clinics3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+isp_clinics3414
+```
+
+
+## Kindergarten
+
+
+```{r}
+kindergarten3414 <- kindergarten3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+kindergarten3414
+```
+
+
+## Libraries
+
+
+```{r}
+libraries3414 <- libraries3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+libraries3414
+```
+
+
+## MRT/LRT
+
+We only keep STN_NAM_DE and geometry
+
+Note that the file is in polygon format, rather than point. Might have to deal with it.
+
+https://stackoverflow.com/questions/52522872/r-sf-package-centroid-within-polygon
+
+
+```{r}
+mrt_lrt <- mrt_lrt %>%
+  select(c('STN_NAM_DE', 'geometry'))
+```
+
+
+Check
+
+
+```{r}
+mrt_lrt
+```
+
+
+## Parks
+
+
+```{r}
+parks3414 <- parks3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+parks3414
+```
+
+
+## Primary School
+
+
+```{r}
+primary_sch_sf <- primary_sch_sf %>%
+  select(c('Primary school', 'geometry'))
+```
+
+```{r}
+primary_sch_sf
+```
+
+
+## Supermarkets
+
+
+```{r}
+supermarkets3414 <- supermarkets3414 %>%
+  select(c('Name', 'geometry'))
+```
+
+```{r}
+supermarkets3414
+```
+
+
+## Tourism Data
+
+
+```{r}
+tourism3414 <- tourism3414 %>%
+  select(c('NAME', 'geometry'))
+```
+
+```{r}
+tourism3414
+```
+
+:::
+
+### Dealing with the anomaly - MRT/LRT
+
+Despite it saying that's point data, it gives polygon data, therefore we need to convert the polygon into point data. Unfortunately, there appears to be an issue that causes st_make_valid to not work, due to missing data within the polygon (There is an 'na').
+
+Thus, we'll take this chance to do some fine tuning and make use of OneMapSG to return us the correct coordinates. We will also remove all 'depots' as they are not considered MRT/LRTs for our dataset.
+
+
+```{r}
+mrt_lrt_new_set <- read_csv("data/aspatial/mrt_lrt_lat_long.csv")
+```
+
+
+Convert into an SF Object
+
+
+```{r}
+mrt_lrt_ns_sf <- st_as_sf(mrt_lrt_new_set, coords=c("LONG", "LAT"), crs=3414)
+```
+
+```{r}
+mrt_lrt_ns_sf <- mrt_lrt_ns_sf %>%
+  select(c('STN_NAM_DE', 'geometry'))
+```
+
+
+Data Wrangling (Aspatial)
+
