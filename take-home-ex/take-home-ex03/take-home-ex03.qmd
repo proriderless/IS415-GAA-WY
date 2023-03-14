@@ -21,19 +21,19 @@ Geographically weighted methods (REgression / Random FoREST) and Ordinary Least 
 Note that corrplot cannot be loaded (Therefore has to be loaded from package)
 
 ```{r}
-pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv)
+pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv, matrixStats)
 ```
 
 ### Geospatial Data:
 
-Singapore National Boundary and Master Plan 2014 subzone!
+Singapore National Boundary and Master Plan 2019 subzone!
 
 -   Singapore National Boundary is a polygon feature data showing the national boundary!
 
--   Master Plan 2014 subzone are information on URA 2014!
+-   Master Plan 2019 subzone are information on URA 2019!
 
 ```{r}
-mpsz <- st_read(dsn="data/geospatial", "MP14_SUBZONE_WEB_PL")
+mpsz <- st_read(dsn="data/geospatial", "MPSZ-2019")
 national_boundary <- st_read(dsn="data/geospatial", "CostalOutline")
 ```
 
@@ -110,11 +110,11 @@ We can extract the following according to their theme on OneMapSG API
 
 Extra if we have time to think about:
 
--   Libraries (Queryname: libraries)
+-   Libraries (Queryname: libraries) \[NUMBER WITHIN 350M\]
 
 -   Integrated Screening Programmes (queryname: moh_isp_clinics)
 
--   Tourist Attractions (Queryname: tourism)
+-   Tourist Attractions (Queryname: tourism) \[NUMBER WITHIN 1KM\]
 
 ### Process of going through to create the shp file:
 
@@ -194,12 +194,12 @@ Convert all of our datasets from CSV to Geospatial (shp)
 -   Shopping Malls
 
 ```{r}
-primary_sch_sf <- st_as_sf(primary_sch, coords=c("LONG", "LAT"), crs=3414)
-top_primary_sch_sf <- st_as_sf(top10_pri_sch, coords=c("LONG", "LAT"), crs=3414)
+primary_sch_sf <- st_as_sf(primary_sch, coords=c("LONG", "LAT"), crs=4326)
+top_primary_sch_sf <- st_as_sf(top10_pri_sch, coords=c("LONG", "LAT"), crs=4326)
 ```
 
 ```{r}
-shopping_mall_sf <- st_as_sf(shopping_mall, coords=c("longitude", "latitude"), crs=3414)
+shopping_mall_sf <- st_as_sf(shopping_mall, coords=c("longitude", "latitude"), crs=4326)
 ```
 
 ### Remove 'Z-Dimension' for Supermarket Data
@@ -210,8 +210,6 @@ supermarkets <- st_zm(supermarkets)
 
 ### Check and change all EPSG for Geospatial data to ESPG 3414
 
-We know the following are not in 3414 as we've mutated them into WGS84 earlier
-
 ```{r}
 childcare3414 <- st_transform(childcare, crs=3414)
 eldercare3414 <- st_transform(eldercare, crs=3414)
@@ -221,6 +219,9 @@ parks3414 <- st_transform(parks, crs=3414)
 libraries3414 <- st_transform(libraries, crs=3414)
 isp_clinics3414 <- st_transform(isp_clinics, crs=3414)
 tourism3414 <- st_transform(tourism, crs=3414)
+primary_sch_sf_3414 <- st_transform(primary_sch_sf, crs=3414)
+top_primary_sch_sf_3414 <- st_transform(top_primary_sch_sf, crs=3414)
+shopping_mall_sf_3414 <- st_transform(shopping_mall_sf, crs=3414)
 ```
 
 #### Check others:
@@ -229,19 +230,19 @@ tourism3414 <- st_transform(tourism, crs=3414)
 ## Primary School SF
 
 ```{r}
-st_crs(primary_sch_sf)
+st_crs(primary_sch_sf_3414)
 ```
 
 ## Top 10 Primary School SF
 
 ```{r}
-st_crs(top_primary_sch_sf)
+st_crs(top_primary_sch_sf_3414)
 ```
 
 ## Shopping Mall SF
 
 ```{r}
-st_crs(shopping_mall_sf)
+st_crs(shopping_mall_sf_3414)
 ```
 
 ## Supermarkets
@@ -379,7 +380,7 @@ parks3414
 ## Primary School
 
 ```{r}
-primary_sch_sf <- primary_sch_sf %>%
+primary_sch_sf_3414 <- primary_sch_sf_3414 %>%
   select(c('Primary school', 'geometry'))
 ```
 
@@ -420,10 +421,10 @@ Thus, we'll take this chance to do some fine tuning and make use of OneMapSG to 
 mrt_lrt_new_set <- read_csv("data/aspatial/mrt_lrt_lat_long.csv")
 ```
 
-Convert into an SF Object
+#### Convert into an SF Object
 
 ```{r}
-mrt_lrt_ns_sf <- st_as_sf(mrt_lrt_new_set, coords=c("LONG", "LAT"), crs=3414)
+mrt_lrt_ns_sf <- st_as_sf(mrt_lrt_new_set, coords=c("LONG", "LAT"), crs=4326)
 ```
 
 ```{r}
@@ -431,4 +432,368 @@ mrt_lrt_ns_sf <- mrt_lrt_ns_sf %>%
   select(c('STN_NAM_DE', 'geometry'))
 ```
 
-Data Wrangling (Aspatial)
+```{r}
+mrt_lrt_ns_sf_3414 <- st_transform(mrt_lrt_ns_sf, crs=3414)
+```
+
+### View the map to make sure the mapping is correct
+
+```{r}
+tmap_mode("view")+
+  tm_shape(bus_stop)+
+  tm_dots(col="purple", size=0.05)
+```
+
+Looks like we have some bus stations in Malaysia, which makes sense, as there are some Singapore buses that travel into Malaysia.
+
+These stops are:
+
+-   LARKIN TERMINAL (Malaysia) \[46239\]
+
+-   KOTARAYA II TER \[46609\]
+
+-   JB SENTRAL \[47701\]
+
+-   JOHOR BAHRU CHECKPOINT (46211, 46219)
+
+We don't want them in our calculation, so we'll remove them.
+
+```{r}
+bus_stop_to_remove <- c(46239, 46609, 47701, 46211, 46219)
+bus_stop_cleaned <- filter(bus_stop, !(BUS_STOP_N %in% bus_stop_to_remove))
+```
+
+#### Check the map again:s
+
+```{r}
+tm_shape(bus_stop_cleaned)+
+  tm_dots(col="purple", size=0.05)
+```
+
+### Convert Bus Stop from WGS84 to SVY21
+
+```{r}
+bus_stop_cleaned_3414 <- st_transform(bus_stop_cleaned, crs = 3414)
+```
+
+```{r}
+st_crs(bus_stop_cleaned_3414)
+```
+
+# Data Wrangling (Aspatial)
+
+We will strictly be looking at Four Room Flats
+
+-   Training Set: 1st January 2021 - 31st December 2022
+
+-   Test Set: January - February 2023
+
+```{r}
+#| eval: false
+resale_flat_sub <-  filter(resale_flat,flat_type == "4 ROOM") %>% 
+              filter(month >= "2021-01" & month <= "2023-02")
+```
+
+### Transforming the Data into usable data
+
+Looking at the data, we will now need to combine both the block and street name to form the address so we can lookup for the postal code and retrieve the LAT/LONG
+
+We will also need to calculate the remaining number of lease. Given that the remaining lease are in 'YEAR' + 'MONTH' format, we need to change it into a continuous number. We will change it to 'MONTHS'.
+
+```{r}
+#| eval: false
+rs_modified <- resale_flat_sub %>%
+  mutate(resale_flat_sub, address = paste(block,street_name)) %>%
+  mutate(resale_flat_sub, remaining_lease_yr = as.integer(str_sub(remaining_lease, 0, 2))) %>%
+  mutate(resale_flat_sub, remaining_lease_mth = as.integer(str_sub(remaining_lease, 9, 11)))
+```
+
+### Calculate the LEASE in Months and remove all intermediary columns
+
+-   Convert all NA into 0
+
+-   Sum up YEAR and MONTH and place them into a new column
+
+-   Select only the columns we need.
+
+```{r}
+#| eval: false
+rs_modified$remaining_lease_mth[is.na(rs_modified$remaining_lease_mth)] <- 0
+
+rs_modified$remaining_lease_yr <- rs_modified$remaining_lease_yr * 12
+rs_modified <- rs_modified %>% 
+  mutate(remaining_lease_mths = rowSums(rs_modified[, c("remaining_lease_yr", "remaining_lease_mth")])) %>%
+  select(month, town, address, block, street_name, flat_type, storey_range, floor_area_sqm, flat_model, 
+         lease_commence_date, remaining_lease_mths, resale_price)
+
+```
+
+#### Glimpse at our data:
+
+```{r}
+#| eval: false
+glimpse(rs_modified)
+```
+
+### Retrieving the LAT/LONG Coordinates from OneMap.sg API
+
+The following solution is courtesy of: [Nor Aisyah](https://aisyahajit2018-is415.netlify.app/posts/2021-11-07-take-home-exercise-3/?panelset2=code-chunk3&panelset6=code-chunk7#filter-resale-data)
+
+We first create a unique list of addresses
+
+```{r}
+#| eval: false
+add_list <- sort(unique(rs_modified$address))
+```
+
+Now we will focus on getting the data needed.
+
+```{r}
+#| eval: false
+retrieve_coords <- function(add_list){
+  
+  # Create a data frame to store all retrieved coordinates
+  postal_coords <- data.frame()
+    
+  for (i in add_list){
+    #print(i)
+
+    r <- GET('https://developers.onemap.sg/commonapi/search?',
+           query=list(searchVal=i,
+                     returnGeom='Y',
+                     getAddrDetails='Y'))
+    data <- fromJSON(rawToChar(r$content))
+    found <- data$found
+    res <- data$results
+    
+    # Create a new data frame for each address
+    new_row <- data.frame()
+    
+    # If single result, append 
+    if (found == 1){
+      postal <- res$POSTAL 
+      lat <- res$LATITUDE
+      lng <- res$LONGITUDE
+      new_row <- data.frame(address= i, postal = postal, latitude = lat, longitude = lng)
+    }
+    
+    # If multiple results, drop NIL and append top 1
+    else if (found > 1){
+      # Remove those with NIL as postal
+      res_sub <- res[res$POSTAL != "NIL", ]
+      
+      # Set as NA first if no Postal
+      if (nrow(res_sub) == 0) {
+          new_row <- data.frame(address= i, postal = NA, latitude = NA, longitude = NA)
+      }
+      
+      else{
+        top1 <- head(res_sub, n = 1)
+        postal <- top1$POSTAL 
+        lat <- top1$LATITUDE
+        lng <- top1$LONGITUDE
+        new_row <- data.frame(address= i, postal = postal, latitude = lat, longitude = lng)
+      }
+    }
+
+    else {
+      new_row <- data.frame(address= i, postal = NA, latitude = NA, longitude = NA)
+    }
+    
+    # Add the row
+    postal_coords <- rbind(postal_coords, new_row)
+  }
+  return(postal_coords)
+}
+```
+
+### We call the function to get the coordinates
+
+```{r}
+#| eval: false
+coords <- retrieve_coords(add_list)
+```
+
+Inspect the results
+
+```{r}
+#| eval: false
+coords[(is.na(coords$postal) | is.na(coords$latitude) | is.na(coords$longitude) | coords$postal=="NIL"), ]
+```
+
+From the results, we can see that it has missing postal code. However, the postal code is not as relevant to our analysis as latitude and longitude.
+
+The missing respective postal code are:
+
+-   680215
+
+-   680216
+
+```{r}
+#| eval: false
+rs_coords <- left_join(rs_modified, coords, by = c('address' = 'address'))
+```
+
+### Write file to RDS
+
+```{r}
+#| eval: false
+write_rds(rs_coords, "data/aspatial/rs_coords.rds")
+```
+
+### Read the RDS file
+
+```{r}
+resale_sub_flat <- read_rds("data/aspatial/rs_coords.rds")
+```
+
+### Assign and transform CRS
+
+Data from OneMapSG are in WGS84, as evident from the decimal. So we will create a SF object in that code before transforming into SVY21
+
+::: panel-tabset
+## Code
+
+```{r}
+resale_coords_sf <- st_as_sf(resale_sub_flat,
+                    coords = c("longitude", 
+                               "latitude"),
+                    crs=4326) %>%
+  st_transform(crs = 3414)
+```
+
+## Check CRS
+
+```{r}
+st_crs(resale_coords_sf)
+```
+:::
+
+#### Check if there are any NA outside of what we confirmed earlier
+
+```{r}
+rows_with_na <- which(is.na(resale_coords_sf), arr.ind=TRUE)
+```
+
+```{r}
+if (nrow(rows_with_na) > 0) {
+  message("The following rows have NA values:")
+  print(rows_with_na)
+} else {
+  message("The dataframe does not contain any rows with NA values.")
+}
+```
+
+### Remove all unnecessary rows 
+
+We only need to keep the identifier, time, resale price, spatial point data, and the structural factors as listed below
+
+-   Area of Unit
+
+-   Floor Level
+
+-   Remaining Lease
+
+-   Age of Unit
+
+```{r}
+trim_resale_flat <- resale_coords_sf %>%
+  select(1:3, 6:8, 11:12)
+```
+
+### Determining CBD
+
+We need to consider the distance to CBD as well. We will take 'Downtown Core' as our reference point, which is located in the southwest of Singapore.
+
+```{r}
+cbd_lat <- 1.287953
+cbd_long <- 103.851784
+
+cbd_sf <- data.frame(cbd_lat, cbd_long) %>%
+  st_as_sf(coords = c("cbd_long", "cbd_lat"), crs=4326) %>%
+  st_transform(crs=3414)
+```
+
+## Proximity Distance Calculation
+
+For our next step, we will need to integrate all of our geospatial data by calculating the proximity to the amenities.
+
+The following function calculates proximity
+
+-   rowMins from matrixStats package finds the shortest possible distance within the distance matrix.
+
+```{r}
+proximity <- function(df1, df2, varname) {
+  dist_matrix <- st_distance(df1, df2) %>%
+    units::drop_units()
+  df1[,varname] <- rowMins(dist_matrix)
+  return(df1)
+}
+```
+
+Implement the Proximity Calculations:
+
+```{r}
+trim_resale_flat <- proximity(trim_resale_flat, cbd_sf, "PROX_CBD") %>%
+  proximity(., eldercare3414, "PROX_ELDERCARE") %>%
+  proximity(., hawker_centre3414, "PROX_HAWKER") %>%
+  proximity(., isp_clinics3414, "PROX_ISP") %>%
+  proximity(., mrt_lrt_ns_sf_3414, "PROX_MRT") %>%
+  proximity(., parks3414, "PROX_PARKS") %>%
+  proximity(., top_primary_sch_sf_3414, "PROX_TOP_PRI") %>%
+  proximity(., shopping_mall_sf_3414, "PROX_SHOPPING") %>%
+  proximity(., supermarkets3414, "PROX_SUPERMARKETS")
+```
+
+### Facility Count within Radius
+
+In addition to calculating the shortest distance between points, we're also interested in finding out how many facilities are located within a specific radius. To accomplish this, we'll use the st_distance() function to calculate the distance between the flats and the desired facilities. We'll then use rowSums() to add up the observations and obtain the count of facilities within the desired radius. The resulting values will be added to the data frame as a new column.
+
+```{r}
+num_radius <- function(df1, df2, varname, radius) {
+  dist_matrix <- st_distance(df1, df2) %>%
+    units::drop_units() %>%
+    as.data.frame()
+  df1[,varname] <- rowSums(dist_matrix <= radius)
+  return(df1)
+}
+```
+
+Implement the function:
+
+```{r}
+trim_resale_flat <- 
+  num_radius(trim_resale_flat, kindergarten3414, "NUM_KINDERGARTEN", 350) %>%
+  num_radius(., childcare3414, "NUM_CHILDCARE", 350) %>%
+  num_radius(., bus_stop_cleaned_3414, "NUM_BUS_STOPS", 350) %>%
+  num_radius(., primary_sch_sf_3414, "NUM_PRI_SCHS", 1000) %>%
+  num_radius(., tourism3414, "NUM_TOURIST_SITES", 1000)
+```
+
+### Save the Data as RDS
+
+Before we do that, we should trim the name, as when converting to RDS the column names are shortened due to limitations
+
+```{r}
+trim_resale_flat <- trim_resale_flat %>%
+  mutate() %>%
+  rename("AREA_SQM" = "floor_area_sqm", 
+         "LEASE_MTHS" = "remaining_lease_mths", 
+         "PRICE"= "resale_price",
+         "FLAT" = "flat_type", 
+         "STOREY" = "storey_range")
+```
+
+```{r}
+st_write(trim_resale_flat, "data/geospatial/resale_flat_final.shp")
+```
+
+### Reimport by reloading our dataset
+
+```{r}
+resale_flat_sf <- st_read(dsn="data/geospatial", layer="resale_flat_final") 
+```
+
+We're done with gathering and creating our data! Now we can move onto our exploratory data analysis and building our prediction models
+
+Sort Storey Data (Change to Ordinal Scale by categorizing them in continuous order) - refer to aishah one. rather than megan's for this.
