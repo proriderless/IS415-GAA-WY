@@ -21,7 +21,7 @@ Geographically weighted methods (REgression / Random FoREST) and Ordinary Least 
 Note that corrplot cannot be loaded (Therefore has to be loaded from package)
 
 ```{r}
-pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv, matrixStats)
+pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv, matrixStats, spdep, SpatialML, Metrics, rsample)
 ```
 
 ### Geospatial Data:
@@ -192,6 +192,8 @@ Convert all of our datasets from CSV to Geospatial (shp)
 -   Primary Schools
 
 -   Shopping Malls
+
+Within primary school, the OneMapAPI is not able to properly return the correct coordinate as the name is 'CATHOLIC HIGH SCHOOL (PRIMARY)'. For it to return the correct coordinate, the name has to be truncated without (PRIMARY).
 
 ```{r}
 primary_sch_sf <- st_as_sf(primary_sch, coords=c("LONG", "LAT"), crs=4326)
@@ -489,7 +491,6 @@ We will strictly be looking at Four Room Flats
 -   Test Set: January - February 2023
 
 ```{r}
-#| eval: false
 resale_flat_sub <-  filter(resale_flat,flat_type == "4 ROOM") %>% 
               filter(month >= "2021-01" & month <= "2023-02")
 ```
@@ -547,6 +548,12 @@ add_list <- sort(unique(rs_modified$address))
 ```
 
 Now we will focus on getting the data needed.
+
+In the following code chunk, the goal is to retrieve coordinates for a given search value using OneMap SG's REST APIs. The code creates a dataframe to store the final retrieved coordinates and uses the httr package's GET() function to make a GET request to https://developers.onemap.sg/commonapi/search.
+
+The required variables to be included in the GET request are searchVal, returnGeom {Y/N}, and getAddrDetails {Y/N}.
+
+The JSON response returned will contain multiple fields, but the code is only interested in the postal code and coordinates like Latitude & Longitude. A new dataframe is created to store each final set of coordinates retrieved during the loop, and the number of responses returned is checked to append to the main dataframe accordingly. Invalid addresses are also checked, and the response is appended to the main dataframe using rbind() function of base R package.
 
 ```{r}
 #| eval: false
@@ -644,6 +651,7 @@ write_rds(rs_coords, "data/aspatial/rs_coords.rds")
 ### Read the RDS file
 
 ```{r}
+#| eval: false
 resale_sub_flat <- read_rds("data/aspatial/rs_coords.rds")
 ```
 
@@ -655,6 +663,7 @@ Data from OneMapSG are in WGS84, as evident from the decimal. So we will create 
 ## Code
 
 ```{r}
+#| eval: false
 resale_coords_sf <- st_as_sf(resale_sub_flat,
                     coords = c("longitude", 
                                "latitude"),
@@ -665,6 +674,7 @@ resale_coords_sf <- st_as_sf(resale_sub_flat,
 ## Check CRS
 
 ```{r}
+#| eval: false
 st_crs(resale_coords_sf)
 ```
 :::
@@ -672,10 +682,12 @@ st_crs(resale_coords_sf)
 #### Check if there are any NA outside of what we confirmed earlier
 
 ```{r}
+#| eval: false
 rows_with_na <- which(is.na(resale_coords_sf), arr.ind=TRUE)
 ```
 
 ```{r}
+#| eval: false
 if (nrow(rows_with_na) > 0) {
   message("The following rows have NA values:")
   print(rows_with_na)
@@ -684,7 +696,7 @@ if (nrow(rows_with_na) > 0) {
 }
 ```
 
-### Remove all unnecessary rows 
+### Remove all unnecessary rows
 
 We only need to keep the identifier, time, resale price, spatial point data, and the structural factors as listed below
 
@@ -696,7 +708,10 @@ We only need to keep the identifier, time, resale price, spatial point data, and
 
 -   Age of Unit
 
+Note that we have not handled the age of unit yet. We'll handle that later.
+
 ```{r}
+#| eval: false
 trim_resale_flat <- resale_coords_sf %>%
   select(1:3, 6:8, 11:12)
 ```
@@ -706,6 +721,7 @@ trim_resale_flat <- resale_coords_sf %>%
 We need to consider the distance to CBD as well. We will take 'Downtown Core' as our reference point, which is located in the southwest of Singapore.
 
 ```{r}
+#| eval: false
 cbd_lat <- 1.287953
 cbd_long <- 103.851784
 
@@ -723,6 +739,7 @@ The following function calculates proximity
 -   rowMins from matrixStats package finds the shortest possible distance within the distance matrix.
 
 ```{r}
+#| eval: false
 proximity <- function(df1, df2, varname) {
   dist_matrix <- st_distance(df1, df2) %>%
     units::drop_units()
@@ -734,6 +751,7 @@ proximity <- function(df1, df2, varname) {
 Implement the Proximity Calculations:
 
 ```{r}
+#| eval: false
 trim_resale_flat <- proximity(trim_resale_flat, cbd_sf, "PROX_CBD") %>%
   proximity(., eldercare3414, "PROX_ELDERCARE") %>%
   proximity(., hawker_centre3414, "PROX_HAWKER") %>%
@@ -750,6 +768,7 @@ trim_resale_flat <- proximity(trim_resale_flat, cbd_sf, "PROX_CBD") %>%
 In addition to calculating the shortest distance between points, we're also interested in finding out how many facilities are located within a specific radius. To accomplish this, we'll use the st_distance() function to calculate the distance between the flats and the desired facilities. We'll then use rowSums() to add up the observations and obtain the count of facilities within the desired radius. The resulting values will be added to the data frame as a new column.
 
 ```{r}
+#| eval: false
 num_radius <- function(df1, df2, varname, radius) {
   dist_matrix <- st_distance(df1, df2) %>%
     units::drop_units() %>%
@@ -762,6 +781,7 @@ num_radius <- function(df1, df2, varname, radius) {
 Implement the function:
 
 ```{r}
+#| eval: false
 trim_resale_flat <- 
   num_radius(trim_resale_flat, kindergarten3414, "NUM_KINDERGARTEN", 350) %>%
   num_radius(., childcare3414, "NUM_CHILDCARE", 350) %>%
@@ -775,6 +795,7 @@ trim_resale_flat <-
 Before we do that, we should trim the name, as when converting to RDS the column names are shortened due to limitations
 
 ```{r}
+#| eval: false
 trim_resale_flat <- trim_resale_flat %>%
   mutate() %>%
   rename("AREA_SQM" = "floor_area_sqm", 
@@ -785,6 +806,7 @@ trim_resale_flat <- trim_resale_flat %>%
 ```
 
 ```{r}
+#| eval: false
 st_write(trim_resale_flat, "data/geospatial/resale_flat_final.shp")
 ```
 
@@ -794,6 +816,479 @@ st_write(trim_resale_flat, "data/geospatial/resale_flat_final.shp")
 resale_flat_sf <- st_read(dsn="data/geospatial", layer="resale_flat_final") 
 ```
 
-We're done with gathering and creating our data! Now we can move onto our exploratory data analysis and building our prediction models
+We're done with gathering and creating our data! Now we can move onto our exploratory data analysis and building our prediction models. Note that there are still some data that need to be modified. Such as ordinal data like Storeys and also the calculation of the flat's age.
 
-Sort Storey Data (Change to Ordinal Scale by categorizing them in continuous order) - refer to aishah one. rather than megan's for this.
+### Calculate age of unit
+
+To calculate the age of unit, we will take 2023 (current year) - lease_commence_date to find out the age of the flat. Then we'll append it into our new sf object.
+
+```{r}
+resale_flat_sub_age <- resale_flat_sub %>%
+  mutate("age_of_unit" = 2023 - lease_commence_date)
+```
+
+```{r}
+resale_flat_sf <- resale_flat_sf %>%
+  mutate("age_of_unit" = resale_flat_sub_age$age_of_unit)
+```
+
+Speaking of which, we'll handle them now.
+
+### Storey Data:
+
+It's a categorical data that has meaning when ordered. Higher/lower levels could potentially have an impact on the price of the HDB Flat. Therefore, we should convert this column of data into numbers, one that the regression can learn from.
+
+```{r}
+storeys <- sort(unique(resale_flat_sf$STOREY))
+storey_order <- 1:length(storeys)
+storey_range_order <- data.frame(storeys, storey_order)
+```
+
+```{r}
+storey_range_order
+```
+
+From the above, we can see that the storey values have been sorted from 1 - 10
+
+We will combine this data with the base resale SF. Unfortunately, we have to drop the geometric column first before we can perform the join. So we'll do that, then we'll combine both the columns
+
+```{r}
+geom_temp_store <- st_geometry(resale_flat_sf)
+temp_no_geo <- st_drop_geometry(resale_flat_sf)
+temp_join <- dplyr::left_join(temp_no_geo, storey_range_order, by=c("STOREY"= "storeys"))
+final_resale_output <- st_as_sf(temp_join, geom_temp_store)
+```
+
+```{r}
+final_resale_output
+```
+
+### Rename to Columns so they are more readable
+
+Due to abbreviation from Shapefile limitation, we will rename them back so it's readable.
+
+```{r}
+final_resale_output <- final_resale_output %>%
+  mutate() %>%
+  rename("PROX_CBD" = "PROX_CB", 
+         "PROX_ELDERCARE" = "PROX_EL", 
+         "PROX_HAWKER"= "PROX_HA",
+         "PROX_ISP" = "PROX_IS", 
+         "PROX_MRT" = "PROX_MR",
+         "PROX_PARK" = "PROX_PA",
+         "PROX_TOP_PRI" = "PROX_TO",
+         "PROX_SHOPPING" = "PROX_SH",
+         "PROX_SUPERMARKET" = "PROX_SU",
+         "NUM_KINDERGARTEN" = "NUM_KIN",
+         "NUM_CHILDCARE" = "NUM_CHI",
+         "NUM_BUS_STOPS" = "NUM_BUS",
+         "NUM_PRI_SCHS" = "NUM_PRI",
+         "NUM_TOURIST_SITES" = "NUM_TOU",
+         "geometry" = "geom_temp_store")
+```
+
+#### Drop 'STOREY"
+
+```{r}
+final_resale_output <- final_resale_output %>%
+  select(c(1:4, 6:24))
+```
+
+# Exploratory Analysis:
+
+Now that we have finished our data wrangling, we can move into exploratory analysis and prediction.
+
+We will start by visualizing the resale prices
+
+```{r}
+ggplot(data=final_resale_output, aes(x=`PRICE`)) +
+  geom_histogram(bins=20, color="black", fill="light blue") +
+    labs(title = "Distribution of Resale Prices",
+         x = "Resale Prices",
+         y = 'Frequency')
+```
+
+There appears to be a right-skewed distribution. This means that the majority of the housing prices are transacted on the lower end with some extremes.
+
+### Histogram Plotting of the Structural Factors
+
+#### Extract the column names to plot
+
+```{r}
+s_factors <- c("AREA_SQ", "LEASE_M", "age_of_unit", "storey_order")
+```
+
+#### Create a list to store histograms on structural factors
+
+-   Create a vector of the size of our structural vectors (4 in this case)
+
+-   Plot the histogram for each structural factor
+
+-   Append the histogram to the created vector
+
+```{r}
+s_factor_hist_list <- vector(mode = "list", length = length(s_factors))
+for (i in 1:length(s_factors)) {
+  hist_plot <- ggplot(final_resale_output, aes_string(x = s_factors[[i]])) +
+    geom_histogram(color="black", fill = "light blue") +
+    labs(title = s_factors[[i]]) +
+    theme(plot.title = element_text(size = 10),
+          axis.title = element_blank())
+  
+  s_factor_hist_list[[i]] <- hist_plot
+}
+```
+
+### Plot the histograms
+
+We'll use the ggarrange() function to organize them into a 2x2 column row plot.
+
+```{r}
+ggarrange(plotlist = s_factor_hist_list,
+          ncol = 2,
+          nrow = 2)
+```
+
+#### AREA_SQ:
+
+It appears that most four-room flats roam around 90+ square feet. However, there are anomalies where it exceeds 110 square feet.
+
+#### LEASE_M and Age of Unit
+
+They appear to be inversely correlated. Where there is a large number of four-room flats that are not old and have a long lease life ahead.
+
+#### Story Order:
+
+There appear to be a familiar pattern where most of the four-room flats are built on lower floors. Though, this might be an effect where most HDBs are just built lower in general, with some anomalies of HDB flats which are built extremely high.
+
+### Locational Factors
+
+```{r}
+l_factor <- c("PROX_CBD", "PROX_ELDERCARE", "PROX_HAWKER", "PROX_ISP", "PROX_MRT", "PROX_PARK", "PROX_TOP_PRI", "PROX_SHOPPING", "PROX_SUPERMARKET",
+              "NUM_KINDERGARTEN", "NUM_CHILDCARE", "NUM_BUS_STOPS", "NUM_PRI_SCHS", "NUM_TOURIST_SITES")
+```
+
+```{r}
+l_factor_hist_list <- vector(mode = "list", length = length(l_factor))
+for (i in 1:length(l_factor)) {
+  hist_plot <- ggplot(final_resale_output, aes_string(x = l_factor[[i]])) +
+    geom_histogram(color="midnight blue", fill = "light sky blue") +
+    labs(title = l_factor[[i]]) +
+    theme(plot.title = element_text(size = 10),
+          axis.title = element_blank())
+  
+  l_factor_hist_list[[i]] <- hist_plot
+}
+```
+
+```{r}
+ggarrange(plotlist = l_factor_hist_list,
+          ncol= 4,
+          nrow = 4)
+```
+
+From observation, it appears that ELDERCARE are in the right-skewed in distribution. Which means some areas have a lot, while majority have almost none. Same goes for hawkers, ISP, MRT, PARK, SUPERMARKETS and shopping. This is a good thing, as this means most HDB are close to ISP, MRT, PARKS, SUPERMARKETS and shopping malls.
+
+## View the prices on the map:
+
+```{r}
+tmap_mode("view")
+tmap_options(check.and.fix = TRUE)
+tm_shape(final_resale_output) +  
+  tm_dots(col = "PRICE",
+          alpha = 0.6,
+          style="quantile") +
+  # sets minimum zoom level to 11, sets maximum zoom level to 14
+  tm_view(set.zoom.limits = c(11,14))
+```
+
+Change back to plot.
+
+```{r}
+tmap_mode("plot")
+```
+
+### Correlation Plot
+
+Now, we'll perform the correlation plot to look at the correlation between the different columns. We will drop columns there is high multicolinearity between them \> 0.8,
+
+**To do that, we will remove the 'geom' from the table.**
+
+```{r}
+final_resale_output_nogeom <- final_resale_output %>%
+  st_drop_geometry()
+```
+
+**View the chart**
+
+```{r}
+corrplot::corrplot(cor(final_resale_output_nogeom[, 5:ncol(final_resale_output_nogeom)]), diag = FALSE, order = "AOE",
+         tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
+```
+
+From the corrplot chart, we can see the the remaining lease is inversely correlated with age of unit. Therefore, it will be excluded for our linear regression.
+
+### Split our Data
+
+For our OLS and GWS models, we will be using 1st January 2021 to 31st December 2022 for training set and January and February 2023 for our test set.
+
+Set seed.
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+resale_flat_train <-filter(final_resale_output, month >= "2021-01" & month <= "2022-12")
+resale_flat_test <-filter(final_resale_output, month >= "2023-01" & month <= "2023-02")
+```
+
+#### Non-Spatial OLS
+
+```{r}
+price_mlr <- lm(PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                data=resale_flat_train)
+```
+
+```{r}
+summary(price_mlr)
+```
+
+#### Save Results:
+
+```{r}
+write_rds(price_mlr, "data/model/price_mlr.rds" )
+```
+
+### Predict Results (OLS) LM
+
+```{r}
+lm_ols_pred <- predict.lm(price_mlr, 
+                           resale_flat_test, 
+                           x.var.name="X",
+                           y.var.name="Y", 
+                           local.w=1,
+                           global.w=0)
+```
+
+```{r}
+lm_ols_pred_df <- as.data.frame(lm_ols_pred)
+```
+
+```{r}
+test_data_ols_lm <- cbind(resale_flat_test, lm_ols_pred_df)
+```
+
+#### Calculate Root Mean Square Error (RMSE)
+
+```{r}
+rmse(test_data_ols_lm$PRICE, 
+     test_data_ols_lm$lm_ols_pred)
+```
+
+### Visualize the Predicted Values (Non spatially weighted)
+
+```{r}
+ggplot(data = test_data_ols_lm,
+       aes(x = lm_ols_pred,
+           y = PRICE)) +
+  geom_point()
+```
+
+From a look at the results, it appears that the model is performing quite well. However, we will now introduce geographically weighted regression to see if we can improved the prediction model.
+
+## Geographically Weighted Regression
+
+### Determine Adaptive Bandwidth for GWR:
+
+Need to convert into SP Object for Train Data
+
+```{r}
+resale_flat_train_sp <- as_Spatial(resale_flat_train)
+resale_flat_train_sp
+```
+
+Need to convert into SP Object for Test Data
+
+```{r}
+resale_flat_test_sp <- as_Spatial(resale_flat_test)
+resale_flat_test_sp
+```
+
+### Computing Bandwidth on Training Data
+
+```{r}
+#| eval: false
+bw_adaptive <- bw.gwr(PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                  data=resale_flat_train_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+
+```
+
+Export the model
+
+```{r}
+#| eval: false
+write_rds(bw_adaptive, "data/model/bw_adaptive.rds")
+```
+
+```{r}
+bw_adaptive <- read_rds("data/model/bw_adaptive.rds")
+```
+
+### Computing Bandwidth based on Test Data
+
+```{r}
+#| eval: false
+bw_adaptive_test <- bw.gwr(PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                  data=resale_flat_test_sp,
+                  approach="CV",
+                  kernel="gaussian",
+                  adaptive=TRUE,
+                  longlat=FALSE)
+```
+
+Save the Test bandwidth model
+
+```{r}
+#| eval: false
+write_rds(bw_adaptive_test, "data/model/bw_adaptive_test.rds")
+```
+
+```{r}
+bw_adaptive_test <- read_rds("data/model/bw_adaptive_test.rds")
+```
+
+```{r}
+bw_adaptive_complete <- bw_adaptive_test + bw_adaptive
+```
+
+```{r}
+bw_adaptive_complete
+```
+
+### Run the Predict GWR Model
+
+## Something WRONG, come back to this later!
+
+```{r}
+#| eval: false
+gwr_adaptive <- gwr.predict(formula = PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                  data=resale_flat_train_sp,
+                  predictdata=resale_flat_test_sp,
+                  bw=bw_adaptive_complete, 
+                  kernel = 'gaussian', 
+                  adaptive=TRUE,
+                  longlat = FALSE,
+                  )
+```
+
+#### Save the model
+
+```{r}
+#| eval: false
+write_rds(gwr_adaptive, "data/model/gwr_adaptive.rds")
+```
+
+Read the model back
+
+```{r}
+gwr_adaptive <- read_rds("data/model/gwr_adaptive.rds")
+gwr_adaptive
+```
+
+### Predict GWR Adaptive (NO USE -\> IT'S THE LM MODEL)
+
+```{r}
+gwr_lm_pred <- predict.glm(gwr_adaptive$lm, 
+                           resale_flat_test, 
+                           x.var.name="X",
+                           y.var.name="Y", 
+                           local.w=1,
+                           global.w=0)
+```
+
+```{r}
+gwrlm_pred_df <- as.data.frame(gwr_lm_pred)
+```
+
+```{r}
+test_data_gwr_lm <- cbind(resale_flat_test, gwrlm_pred_df)
+```
+
+#### Calculate Root Mean Square Error (RMSE)
+
+```{r}
+rmse(test_data_gwr_lm$PRICE, 
+     test_data_gwr_lm$gwr_lm_pred)
+```
+
+### Visualize the Predicted Values (Spatially weighted)
+
+```{r}
+ggplot(data = test_data_gwr_lm,
+       aes(x = gwr_lm_pred,
+           y = PRICE)) +
+  geom_point()
+```
+
+## Geogprahical Random Forest Model
+
+#### Extracting coordinates data
+
+```{r}
+coords_train <- st_coordinates(resale_flat_train)
+coords_test <- st_coordinates(resale_flat_test)
+```
+
+Dropping the Geometry column for training
+
+```{r}
+resale_flat_train_no_geom <- resale_flat_train %>% 
+  st_drop_geometry()
+```
+
+### Getting the bandwidth
+
+We will use the grf.bw method to obtain the bandwidth
+
+```{r}
+#| eval: false
+grf_bw <- grf.bw(formula = PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                  dataset=resale_flat_train_no_geom,
+                  coords=coords_train,
+                  kernel="adaptive")
+```
