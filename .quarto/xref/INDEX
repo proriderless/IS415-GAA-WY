@@ -73,5 +73,14 @@
   },
   "take-home-ex/take-home-ex03/data/geospatial/MPSZ-2019.qmd": {
     "MPSZ-2019.html": "05c39a20"
+  },
+  "inclass-ex/inclass-ex10/inclass-ex10.qmd": {
+    "inclass-ex10.html": "e959df2a"
+  },
+  "inclass-ex/inclass-ex10/data/geospatial/ELDERCARE.qmd": {
+    "ELDERCARE.html": "9f9e9843"
+  },
+  "inclass-ex/inclass-ex10/data/geospatial/hexagons.qmd": {
+    "hexagons.html": "de4319e9"
   }
 }
