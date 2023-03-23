@@ -1,0 +1,208 @@
+Bandwidth: 331
+R2 of Local Model: 0.928487917777661
+Bandwidth: 332
+R2 of Local Model: 0.927607441811455
+Bandwidth: 333
+R2 of Local Model: 0.928584376750302
+Bandwidth: 334
+R2 of Local Model: 0.927188503449855
+Bandwidth: 335
+R2 of Local Model: 0.929046952369366
+Bandwidth: 336
+R2 of Local Model: 0.92744619458086
+Bandwidth: 337
+R2 of Local Model: 0.928462439167593
+Bandwidth: 338
+R2 of Local Model: 0.927239387395655
+Bandwidth: 339
+R2 of Local Model: 0.928236245740123
+Bandwidth: 340
+R2 of Local Model: 0.928565253996034
+Bandwidth: 341
+R2 of Local Model: 0.928213147592213
+Bandwidth: 342
+R2 of Local Model: 0.928426868999498
+Bandwidth: 343
+R2 of Local Model: 0.92776173781965
+Bandwidth: 344
+R2 of Local Model: 0.928358812356241
+Bandwidth: 345
+R2 of Local Model: 0.927726205306799
+Bandwidth: 346
+R2 of Local Model: 0.928320483904636
+Bandwidth: 347
+R2 of Local Model: 0.927823271079961
+Bandwidth: 348
+R2 of Local Model: 0.928182141355479
+Bandwidth: 349
+R2 of Local Model: 0.928219600640922
+Bandwidth: 350
+R2 of Local Model: 0.928772627904435
+Bandwidth: 351
+R2 of Local Model: 0.928327557377999
+Bandwidth: 352
+R2 of Local Model: 0.928847537528902
+Bandwidth: 353
+R2 of Local Model: 0.927822293404792
+Bandwidth: 354
+R2 of Local Model: 0.928236357659819
+Bandwidth: 355
+R2 of Local Model: 0.929322496040631
+Bandwidth: 356
+R2 of Local Model: 0.92753837753389
+Bandwidth: 357
+R2 of Local Model: 0.927505363999238
+Bandwidth: 358
+R2 of Local Model: 0.928360964730128
+Bandwidth: 359
+R2 of Local Model: 0.927550988569272
+Bandwidth: 360
+R2 of Local Model: 0.928975884884678
+Bandwidth: 361
+R2 of Local Model: 0.927899562521322
+Bandwidth: 362
+R2 of Local Model: 0.927511569606382
+Bandwidth: 363
+R2 of Local Model: 0.928647887992443
+Bandwidth: 364
+R2 of Local Model: 0.928757292982437
+Bandwidth: 365
+R2 of Local Model: 0.928908580739289
+Bandwidth: 366
+R2 of Local Model: 0.927962472730493
+Bandwidth: 367
+R2 of Local Model: 0.928219469964645
+Bandwidth: 368
+R2 of Local Model: 0.928320922284468
+Bandwidth: 369
+R2 of Local Model: 0.92849783498469
+Bandwidth: 370
+R2 of Local Model: 0.928921900399736
+Bandwidth: 371
+R2 of Local Model: 0.928891008100474
+Bandwidth: 372
+R2 of Local Model: 0.927549027383622
+Bandwidth: 373
+R2 of Local Model: 0.928575480055919
+Bandwidth: 374
+R2 of Local Model: 0.927672503806709
+Bandwidth: 375
+R2 of Local Model: 0.928786463824046
+Bandwidth: 376
+R2 of Local Model: 0.927867914560842
+Bandwidth: 377
+R2 of Local Model: 0.928642768939767
+Bandwidth: 378
+R2 of Local Model: 0.927580452294152
+Bandwidth: 379
+R2 of Local Model: 0.928566237496647
+Bandwidth: 380
+R2 of Local Model: 0.930317378559901
+Bandwidth: 381
+R2 of Local Model: 0.928619424775118
+Bandwidth: 382
+R2 of Local Model: 0.928393814080233
+Bandwidth: 383
+R2 of Local Model: 0.928554527374789
+Bandwidth: 384
+R2 of Local Model: 0.929997689542621
+Bandwidth: 385
+R2 of Local Model: 0.928451798032526
+Bandwidth: 386
+R2 of Local Model: 0.928606446772016
+Bandwidth: 387
+R2 of Local Model: 0.927572173787888
+Bandwidth: 388
+R2 of Local Model: 0.9279460190051
+Bandwidth: 389
+R2 of Local Model: 0.928639325905448
+Bandwidth: 390
+R2 of Local Model: 0.927425893678889
+Bandwidth: 391
+R2 of Local Model: 0.928984441112024
+Bandwidth: 392
+R2 of Local Model: 0.929309280214433
+Bandwidth: 393
+R2 of Local Model: 0.928634927942065
+Bandwidth: 394
+R2 of Local Model: 0.927712167511897
+Bandwidth: 395
+R2 of Local Model: 0.92926953966394
+Bandwidth: 396
+R2 of Local Model: 0.92729235036897
+Bandwidth: 397
+R2 of Local Model: 0.927968728080108
+Bandwidth: 398
+R2 of Local Model: 0.928743814521345
+Bandwidth: 399
+R2 of Local Model: 0.92843759664944
+Bandwidth: 400
+R2 of Local Model: 0.927845394422112
+Bandwidth: 401
+R2 of Local Model: 0.927834121000581
+Bandwidth: 402
+R2 of Local Model: 0.92772708923665
+Bandwidth: 403
+R2 of Local Model: 0.928456765302502
+Bandwidth: 404
+R2 of Local Model: 0.928707329746776
+Bandwidth: 405
+R2 of Local Model: 0.928201723851263
+Bandwidth: 406
+R2 of Local Model: 0.927933401611096
+Bandwidth: 407
+R2 of Local Model: 0.928078755992115
+Bandwidth: 408
+R2 of Local Model: 0.92854535038349
+Bandwidth: 409
+R2 of Local Model: 0.928843574362936
+Bandwidth: 410
+R2 of Local Model: 0.929569049808885
+Bandwidth: 411
+R2 of Local Model: 0.926971642583936
+Bandwidth: 412
+R2 of Local Model: 0.928641261036375
+Bandwidth: 413
+R2 of Local Model: 0.928638800541796
+Bandwidth: 414
+R2 of Local Model: 0.927717133079944
+Bandwidth: 415
+R2 of Local Model: 0.929141072043574
+Bandwidth: 416
+R2 of Local Model: 0.928819539176847
+Bandwidth: 417
+R2 of Local Model: 0.928112567996163
+Bandwidth: 418
+R2 of Local Model: 0.928726864592745
+Bandwidth: 419
+R2 of Local Model: 0.92868879797587
+Bandwidth: 420
+R2 of Local Model: 0.928535230457292
+Bandwidth: 421
+R2 of Local Model: 0.928525595541211
+Bandwidth: 422
+R2 of Local Model: 0.92841857485932
+Bandwidth: 423
+R2 of Local Model: 0.928573329455401
+Bandwidth: 424
+R2 of Local Model: 0.928389768864086
+Bandwidth: 425
+R2 of Local Model: 0.928208100557079
+Bandwidth: 426
+R2 of Local Model: 0.928417597646
+Bandwidth: 427
+R2 of Local Model: 0.928920331982284
+Bandwidth: 428
+R2 of Local Model: 0.928862463865919
+Bandwidth: 429
+R2 of Local Model: 0.929183290315554
+Bandwidth: 430
+R2 of Local Model: 0.928074307805113
+Bandwidth: 431
+R2 of Local Model: 0.929398256657408
+Bandwidth: 432
+R2 of Local Model: 0.929389867029869
+Bandwidth: 433
+R2 of Local Model: 0.927452734648107
+Bandwidth: 434
+R2 of Local Model: 0.927332916905707

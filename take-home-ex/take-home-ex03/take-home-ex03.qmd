@@ -33,6 +33,7 @@ Singapore National Boundary and Master Plan 2019 subzone!
 -   Master Plan 2019 subzone are information on URA 2019!
 
 ```{r}
+#| eval: false
 mpsz <- st_read(dsn="data/geospatial", "MPSZ-2019")
 national_boundary <- st_read(dsn="data/geospatial", "CostalOutline")
 ```
@@ -48,6 +49,7 @@ national_boundary <- st_read(dsn="data/geospatial", "CostalOutline")
 For our case, we will be using four-room flats for our prediction
 
 ```{r}
+#| eval: false
 resale_flat <- read_csv("data/aspatial/resale-flat-prices-from-jan-2017-onwards.csv")
 ```
 
@@ -88,6 +90,7 @@ We start by sourcing some of this data
 -   Bus Stop: [LTA DataMall Bus Stop](https://datamall.lta.gov.sg/content/datamall/en/search_datasets.html?searchText=bus%20stop)
 
 ```{r}
+#| eval: false
 mrt_lrt <- st_read(dsn="data/geospatial", layer="RapidTransitSystemStation")
 bus_stop <- st_read(dsn="data/geospatial", layer="BusStop")
 ```
@@ -132,6 +135,7 @@ Courtesy of Megan's work. (The following code chunk will be repeated to create t
 ### Load in all the shp data
 
 ```{r}
+#| eval: false
 childcare <- st_read(dsn="data/geospatial", layer="childcare")
 eldercare <- st_read(dsn="data/geospatial", layer="eldercare")
 hawker_centre <- st_read(dsn="data/geospatial", layer="hawkercentre")
@@ -153,6 +157,7 @@ tourism <- st_read(dsn="data/geospatial", layer="tourism")
 -   Malls (Taken from this [dataset](https://github.com/ValaryLim/Mall-Coordinates-Web-Scraper)) \[NOTE: SVY21\]
 
 ```{r}
+#| eval: false
 supermarkets <- st_read("data/geospatial/supermarkets.kml")
 ```
 
@@ -163,6 +168,7 @@ The lat/long are taken from OneMapSG API
 Top 10 schools as well, dervied from schlah
 
 ```{r}
+#| eval: false
 primary_sch <- read_csv("data/aspatial/primary_school_geo.csv")
 top10_pri_sch <- read_csv("data/aspatial/top_10_primary_school_geo.csv")
 ```
@@ -170,6 +176,7 @@ top10_pri_sch <- read_csv("data/aspatial/top_10_primary_school_geo.csv")
 ### Load Shopping Malls
 
 ```{r}
+#| eval: false
 shopping_mall <- read_csv("data/aspatial/shopping_mall.csv")
 ```
 
@@ -196,23 +203,27 @@ Convert all of our datasets from CSV to Geospatial (shp)
 Within primary school, the OneMapAPI is not able to properly return the correct coordinate as the name is 'CATHOLIC HIGH SCHOOL (PRIMARY)'. For it to return the correct coordinate, the name has to be truncated without (PRIMARY).
 
 ```{r}
+#| eval: false
 primary_sch_sf <- st_as_sf(primary_sch, coords=c("LONG", "LAT"), crs=4326)
 top_primary_sch_sf <- st_as_sf(top10_pri_sch, coords=c("LONG", "LAT"), crs=4326)
 ```
 
 ```{r}
+#| eval: false
 shopping_mall_sf <- st_as_sf(shopping_mall, coords=c("longitude", "latitude"), crs=4326)
 ```
 
 ### Remove 'Z-Dimension' for Supermarket Data
 
 ```{r}
+#| eval: false
 supermarkets <- st_zm(supermarkets)
 ```
 
 ### Check and change all EPSG for Geospatial data to ESPG 3414
 
 ```{r}
+#| eval: false
 childcare3414 <- st_transform(childcare, crs=3414)
 eldercare3414 <- st_transform(eldercare, crs=3414)
 hawker_centre3414 <- st_transform(hawker_centre, crs=3414)
@@ -232,24 +243,28 @@ shopping_mall_sf_3414 <- st_transform(shopping_mall_sf, crs=3414)
 ## Primary School SF
 
 ```{r}
+#| eval: false
 st_crs(primary_sch_sf_3414)
 ```
 
 ## Top 10 Primary School SF
 
 ```{r}
+#| eval: false
 st_crs(top_primary_sch_sf_3414)
 ```
 
 ## Shopping Mall SF
 
 ```{r}
+#| eval: false
 st_crs(shopping_mall_sf_3414)
 ```
 
 ## Supermarkets
 
 ```{r}
+#| eval: false
 st_crs(supermarkets)
 ```
 :::
@@ -257,12 +272,14 @@ st_crs(supermarkets)
 #### Looks like Supermarket is still in WGS84, let's fix that
 
 ```{r}
+#| eval: false
 supermarkets3414 <- st_transform(supermarkets, crs=3414)
 ```
 
 ### Check to make sure...
 
 ```{r}
+#| eval: false
 st_crs(supermarkets3414)
 ```
 
@@ -280,6 +297,7 @@ After glimpsing at the sf dataframe, we are going to remove all useless columns.
 We will keep name and geometry
 
 ```{r}
+#| eval: false
 childcare3414 <- childcare3414 %>%
   select(c('NAME', 'geometry'))
 ```
@@ -287,6 +305,7 @@ childcare3414 <- childcare3414 %>%
 Check result
 
 ```{r}
+#| eval: false
 childcare3414
 ```
 
@@ -295,6 +314,7 @@ childcare3414
 Same thing, name and geometry
 
 ```{r}
+#| eval: false
 eldercare3414 <- eldercare3414 %>%
   select(c('NAME', 'geometry'))
 ```
@@ -302,50 +322,59 @@ eldercare3414 <- eldercare3414 %>%
 Check result
 
 ```{r}
+#| eval: false
 eldercare3414
 ```
 
 ## Hawker Centre
 
 ```{r}
+#| eval: false
 hawker_centre3414 <- hawker_centre3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 hawker_centre3414
 ```
 
 ## ISP Clinics
 
 ```{r}
+#| eval: false
 isp_clinics3414 <- isp_clinics3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 isp_clinics3414
 ```
 
 ## Kindergarten
 
 ```{r}
+#| eval: false
 kindergarten3414 <- kindergarten3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 kindergarten3414
 ```
 
 ## Libraries
 
 ```{r}
+#| eval: false
 libraries3414 <- libraries3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 libraries3414
 ```
 
@@ -358,6 +387,7 @@ Note that the file is in polygon format, rather than point. Might have to deal w
 https://stackoverflow.com/questions/52522872/r-sf-package-centroid-within-polygon
 
 ```{r}
+#| eval: false
 mrt_lrt <- mrt_lrt %>%
   select(c('STN_NAM_DE', 'geometry'))
 ```
@@ -365,50 +395,59 @@ mrt_lrt <- mrt_lrt %>%
 Check
 
 ```{r}
+#| eval: false
 mrt_lrt
 ```
 
 ## Parks
 
 ```{r}
+#| eval: false
 parks3414 <- parks3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 parks3414
 ```
 
 ## Primary School
 
 ```{r}
+#| eval: false
 primary_sch_sf_3414 <- primary_sch_sf_3414 %>%
   select(c('Primary school', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 primary_sch_sf
 ```
 
 ## Supermarkets
 
 ```{r}
+#| eval: false
 supermarkets3414 <- supermarkets3414 %>%
   select(c('Name', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 supermarkets3414
 ```
 
 ## Tourism Data
 
 ```{r}
+#| eval: false
 tourism3414 <- tourism3414 %>%
   select(c('NAME', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 tourism3414
 ```
 :::
@@ -420,27 +459,32 @@ Despite it saying that's point data, it gives polygon data, therefore we need to
 Thus, we'll take this chance to do some fine tuning and make use of OneMapSG to return us the correct coordinates. We will also remove all 'depots' as they are not considered MRT/LRTs for our dataset.
 
 ```{r}
+#| eval: false
 mrt_lrt_new_set <- read_csv("data/aspatial/mrt_lrt_lat_long.csv")
 ```
 
 #### Convert into an SF Object
 
 ```{r}
+#| eval: false
 mrt_lrt_ns_sf <- st_as_sf(mrt_lrt_new_set, coords=c("LONG", "LAT"), crs=4326)
 ```
 
 ```{r}
+#| eval: false
 mrt_lrt_ns_sf <- mrt_lrt_ns_sf %>%
   select(c('STN_NAM_DE', 'geometry'))
 ```
 
 ```{r}
+#| eval: false
 mrt_lrt_ns_sf_3414 <- st_transform(mrt_lrt_ns_sf, crs=3414)
 ```
 
 ### View the map to make sure the mapping is correct
 
 ```{r}
+#| eval: false
 tmap_mode("view")+
   tm_shape(bus_stop)+
   tm_dots(col="purple", size=0.05)
@@ -461,6 +505,7 @@ These stops are:
 We don't want them in our calculation, so we'll remove them.
 
 ```{r}
+#| eval: false
 bus_stop_to_remove <- c(46239, 46609, 47701, 46211, 46219)
 bus_stop_cleaned <- filter(bus_stop, !(BUS_STOP_N %in% bus_stop_to_remove))
 ```
@@ -468,6 +513,7 @@ bus_stop_cleaned <- filter(bus_stop, !(BUS_STOP_N %in% bus_stop_to_remove))
 #### Check the map again:s
 
 ```{r}
+#| eval: false
 tm_shape(bus_stop_cleaned)+
   tm_dots(col="purple", size=0.05)
 ```
@@ -475,10 +521,12 @@ tm_shape(bus_stop_cleaned)+
 ### Convert Bus Stop from WGS84 to SVY21
 
 ```{r}
+#| eval: false
 bus_stop_cleaned_3414 <- st_transform(bus_stop_cleaned, crs = 3414)
 ```
 
 ```{r}
+#| eval: false
 st_crs(bus_stop_cleaned_3414)
 ```
 
@@ -491,6 +539,7 @@ We will strictly be looking at Four Room Flats
 -   Test Set: January - February 2023
 
 ```{r}
+#| eval: false
 resale_flat_sub <-  filter(resale_flat,flat_type == "4 ROOM") %>% 
               filter(month >= "2021-01" & month <= "2023-02")
 ```
@@ -813,6 +862,7 @@ st_write(trim_resale_flat, "data/geospatial/resale_flat_final.shp")
 ### Reimport by reloading our dataset
 
 ```{r}
+#| eval: false
 resale_flat_sf <- st_read(dsn="data/geospatial", layer="resale_flat_final") 
 ```
 
@@ -823,11 +873,13 @@ We're done with gathering and creating our data! Now we can move onto our explor
 To calculate the age of unit, we will take 2023 (current year) - lease_commence_date to find out the age of the flat. Then we'll append it into our new sf object.
 
 ```{r}
+#| eval: false
 resale_flat_sub_age <- resale_flat_sub %>%
   mutate("age_of_unit" = 2023 - lease_commence_date)
 ```
 
 ```{r}
+#| eval: false
 resale_flat_sf <- resale_flat_sf %>%
   mutate("age_of_unit" = resale_flat_sub_age$age_of_unit)
 ```
@@ -839,12 +891,14 @@ Speaking of which, we'll handle them now.
 It's a categorical data that has meaning when ordered. Higher/lower levels could potentially have an impact on the price of the HDB Flat. Therefore, we should convert this column of data into numbers, one that the regression can learn from.
 
 ```{r}
+#| eval: false
 storeys <- sort(unique(resale_flat_sf$STOREY))
 storey_order <- 1:length(storeys)
 storey_range_order <- data.frame(storeys, storey_order)
 ```
 
 ```{r}
+#| eval: false
 storey_range_order
 ```
 
@@ -853,6 +907,7 @@ From the above, we can see that the storey values have been sorted from 1 - 10
 We will combine this data with the base resale SF. Unfortunately, we have to drop the geometric column first before we can perform the join. So we'll do that, then we'll combine both the columns
 
 ```{r}
+#| eval: false
 geom_temp_store <- st_geometry(resale_flat_sf)
 temp_no_geo <- st_drop_geometry(resale_flat_sf)
 temp_join <- dplyr::left_join(temp_no_geo, storey_range_order, by=c("STOREY"= "storeys"))
@@ -860,7 +915,20 @@ final_resale_output <- st_as_sf(temp_join, geom_temp_store)
 ```
 
 ```{r}
+#| eval: false
 final_resale_output
+```
+
+### Write and read file
+
+```{r}
+#| eval: false
+write_rds(final_resale_output, "data/model/final_resale_output.rds")
+```
+
+```{r}
+#| eval: false
+final_resale_output <- read_rds("data/model/final_resale_output.rds")
 ```
 
 ### Rename to Columns so they are more readable
@@ -868,6 +936,7 @@ final_resale_output
 Due to abbreviation from Shapefile limitation, we will rename them back so it's readable.
 
 ```{r}
+#| eval: false
 final_resale_output <- final_resale_output %>%
   mutate() %>%
   rename("PROX_CBD" = "PROX_CB", 
@@ -890,8 +959,20 @@ final_resale_output <- final_resale_output %>%
 #### Drop 'STOREY"
 
 ```{r}
+#| eval: false
 final_resale_output <- final_resale_output %>%
   select(c(1:4, 6:24))
+```
+
+Write and read final output
+
+```{r}
+#| eval: false
+write_rds(final_resale_output, "data/model/final_resale_output.rds")
+```
+
+```{r}
+final_resale_output <- read_rds("data/model/final_resale_output.rds")
 ```
 
 # Exploratory Analysis:
@@ -1046,6 +1127,7 @@ resale_flat_test <-filter(final_resale_output, month >= "2023-01" & month <= "20
 #### Non-Spatial OLS
 
 ```{r}
+#| eval: false
 price_mlr <- lm(PRICE ~ AREA_SQ +
                   storey_order + LEASE_M +
                   PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
@@ -1056,14 +1138,16 @@ price_mlr <- lm(PRICE ~ AREA_SQ +
                 data=resale_flat_train)
 ```
 
-```{r}
-summary(price_mlr)
-```
-
 #### Save Results:
 
 ```{r}
+#| eval: false
 write_rds(price_mlr, "data/model/price_mlr.rds" )
+```
+
+```{r}
+price_mlr <- read_rds("data/model/price_mlr.rds")
+summary(price_mlr)
 ```
 
 ### Predict Results (OLS) LM
@@ -1103,175 +1187,25 @@ ggplot(data = test_data_ols_lm,
 
 From a look at the results, it appears that the model is performing quite well. However, we will now introduce geographically weighted regression to see if we can improved the prediction model.
 
-## Geographically Weighted Regression
-
-### Determine Adaptive Bandwidth for GWR:
-
-Need to convert into SP Object for Train Data
-
-```{r}
-resale_flat_train_sp <- as_Spatial(resale_flat_train)
-resale_flat_train_sp
-```
-
-Need to convert into SP Object for Test Data
-
-```{r}
-resale_flat_test_sp <- as_Spatial(resale_flat_test)
-resale_flat_test_sp
-```
-
-### Computing Bandwidth on Training Data
-
-```{r}
-#| eval: false
-bw_adaptive <- bw.gwr(PRICE ~ AREA_SQ +
-                  storey_order + LEASE_M +
-                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
-                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
-                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
-                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
-                  NUM_TOURIST_SITES,
-                  data=resale_flat_train_sp,
-                  approach="CV",
-                  kernel="gaussian",
-                  adaptive=TRUE,
-                  longlat=FALSE)
-
-```
-
-Export the model
-
-```{r}
-#| eval: false
-write_rds(bw_adaptive, "data/model/bw_adaptive.rds")
-```
-
-```{r}
-bw_adaptive <- read_rds("data/model/bw_adaptive.rds")
-```
-
-### Computing Bandwidth based on Test Data
-
-```{r}
-#| eval: false
-bw_adaptive_test <- bw.gwr(PRICE ~ AREA_SQ +
-                  storey_order + LEASE_M +
-                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
-                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
-                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
-                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
-                  NUM_TOURIST_SITES,
-                  data=resale_flat_test_sp,
-                  approach="CV",
-                  kernel="gaussian",
-                  adaptive=TRUE,
-                  longlat=FALSE)
-```
-
-Save the Test bandwidth model
-
-```{r}
-#| eval: false
-write_rds(bw_adaptive_test, "data/model/bw_adaptive_test.rds")
-```
-
-```{r}
-bw_adaptive_test <- read_rds("data/model/bw_adaptive_test.rds")
-```
-
-```{r}
-bw_adaptive_complete <- bw_adaptive_test + bw_adaptive
-```
-
-```{r}
-bw_adaptive_complete
-```
-
-### Run the Predict GWR Model
-
-## Something WRONG, come back to this later!
-
-```{r}
-#| eval: false
-gwr_adaptive <- gwr.predict(formula = PRICE ~ AREA_SQ +
-                  storey_order + LEASE_M +
-                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
-                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
-                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
-                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
-                  NUM_TOURIST_SITES,
-                  data=resale_flat_train_sp,
-                  predictdata=resale_flat_test_sp,
-                  bw=bw_adaptive_complete, 
-                  kernel = 'gaussian', 
-                  adaptive=TRUE,
-                  longlat = FALSE,
-                  )
-```
-
-#### Save the model
-
-```{r}
-#| eval: false
-write_rds(gwr_adaptive, "data/model/gwr_adaptive.rds")
-```
-
-Read the model back
-
-```{r}
-gwr_adaptive <- read_rds("data/model/gwr_adaptive.rds")
-gwr_adaptive
-```
-
-### Predict GWR Adaptive (NO USE -\> IT'S THE LM MODEL)
-
-```{r}
-gwr_lm_pred <- predict.glm(gwr_adaptive$lm, 
-                           resale_flat_test, 
-                           x.var.name="X",
-                           y.var.name="Y", 
-                           local.w=1,
-                           global.w=0)
-```
-
-```{r}
-gwrlm_pred_df <- as.data.frame(gwr_lm_pred)
-```
-
-```{r}
-test_data_gwr_lm <- cbind(resale_flat_test, gwrlm_pred_df)
-```
-
-#### Calculate Root Mean Square Error (RMSE)
-
-```{r}
-rmse(test_data_gwr_lm$PRICE, 
-     test_data_gwr_lm$gwr_lm_pred)
-```
-
-### Visualize the Predicted Values (Spatially weighted)
-
-```{r}
-ggplot(data = test_data_gwr_lm,
-       aes(x = gwr_lm_pred,
-           y = PRICE)) +
-  geom_point()
-```
-
 ## Geogprahical Random Forest Model
+
+For our proof of concept (due to it taking too long to run), we will run just 6 months of data in the year 2022
+
+```{r}
+resale_flat_train_6mth <-  filter(resale_flat_train,month >= "2022-06" & month <= "2022-12")
+```
 
 #### Extracting coordinates data
 
 ```{r}
-coords_train <- st_coordinates(resale_flat_train)
+coords_train <- st_coordinates(resale_flat_train_6mth)
 coords_test <- st_coordinates(resale_flat_test)
 ```
 
 Dropping the Geometry column for training
 
 ```{r}
-resale_flat_train_no_geom <- resale_flat_train %>% 
+resale_flat_train_6mth_no_geom <- resale_flat_train_6mth %>% 
   st_drop_geometry()
 ```
 
@@ -1288,7 +1222,328 @@ grf_bw <- grf.bw(formula = PRICE ~ AREA_SQ +
                   PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
                   NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
                   NUM_TOURIST_SITES,
-                  dataset=resale_flat_train_no_geom,
+                  dataset=resale_flat_train_6mth_no_geom,
                   coords=coords_train,
                   kernel="adaptive")
+```
+
+#### Results:
+
+Due to running for over 24+ hours and not being able to converge, I've picked out the bandwidth with the highest R2 score, which is 380 at R2 0.930317378559901.
+
+```{r}
+#| code-fold: true
+#Bandwidth: 331
+# R2 of Local Model: 0.928487917777661
+# Bandwidth: 332
+# R2 of Local Model: 0.927607441811455
+# Bandwidth: 333
+# R2 of Local Model: 0.928584376750302
+# Bandwidth: 334
+# R2 of Local Model: 0.927188503449855
+# Bandwidth: 335
+# R2 of Local Model: 0.929046952369366
+# Bandwidth: 336
+# R2 of Local Model: 0.92744619458086
+# Bandwidth: 337
+# R2 of Local Model: 0.928462439167593
+# Bandwidth: 338
+# R2 of Local Model: 0.927239387395655
+# Bandwidth: 339
+# R2 of Local Model: 0.928236245740123
+# Bandwidth: 340
+# R2 of Local Model: 0.928565253996034
+# Bandwidth: 341
+# R2 of Local Model: 0.928213147592213
+# Bandwidth: 342
+# R2 of Local Model: 0.928426868999498
+# Bandwidth: 343
+# R2 of Local Model: 0.92776173781965
+# Bandwidth: 344
+# R2 of Local Model: 0.928358812356241
+# Bandwidth: 345
+# R2 of Local Model: 0.927726205306799
+# Bandwidth: 346
+# R2 of Local Model: 0.928320483904636
+# Bandwidth: 347
+# R2 of Local Model: 0.927823271079961
+# Bandwidth: 348
+# R2 of Local Model: 0.928182141355479
+# Bandwidth: 349
+# R2 of Local Model: 0.928219600640922
+# Bandwidth: 350
+# R2 of Local Model: 0.928772627904435
+# Bandwidth: 351
+# R2 of Local Model: 0.928327557377999
+# Bandwidth: 352
+# R2 of Local Model: 0.928847537528902
+# Bandwidth: 353
+# R2 of Local Model: 0.927822293404792
+# Bandwidth: 354
+# R2 of Local Model: 0.928236357659819
+# Bandwidth: 355
+# R2 of Local Model: 0.929322496040631
+# Bandwidth: 356
+# R2 of Local Model: 0.92753837753389
+# Bandwidth: 357
+# R2 of Local Model: 0.927505363999238
+# Bandwidth: 358
+# R2 of Local Model: 0.928360964730128
+# Bandwidth: 359
+# R2 of Local Model: 0.927550988569272
+# Bandwidth: 360
+# R2 of Local Model: 0.928975884884678
+# Bandwidth: 361
+# R2 of Local Model: 0.927899562521322
+# Bandwidth: 362
+# R2 of Local Model: 0.927511569606382
+# Bandwidth: 363
+# R2 of Local Model: 0.928647887992443
+# Bandwidth: 364
+# R2 of Local Model: 0.928757292982437
+# Bandwidth: 365
+# R2 of Local Model: 0.928908580739289
+# Bandwidth: 366
+# R2 of Local Model: 0.927962472730493
+# Bandwidth: 367
+# R2 of Local Model: 0.928219469964645
+# Bandwidth: 368
+# R2 of Local Model: 0.928320922284468
+# Bandwidth: 369
+# R2 of Local Model: 0.92849783498469
+# Bandwidth: 370
+# R2 of Local Model: 0.928921900399736
+# Bandwidth: 371
+# R2 of Local Model: 0.928891008100474
+# Bandwidth: 372
+# R2 of Local Model: 0.927549027383622
+# Bandwidth: 373
+# R2 of Local Model: 0.928575480055919
+# Bandwidth: 374
+# R2 of Local Model: 0.927672503806709
+# Bandwidth: 375
+# R2 of Local Model: 0.928786463824046
+# Bandwidth: 376
+# R2 of Local Model: 0.927867914560842
+# Bandwidth: 377
+# R2 of Local Model: 0.928642768939767
+# Bandwidth: 378
+# R2 of Local Model: 0.927580452294152
+# Bandwidth: 379
+# R2 of Local Model: 0.928566237496647
+# Bandwidth: 380
+# R2 of Local Model: 0.930317378559901
+# Bandwidth: 381
+# R2 of Local Model: 0.928619424775118
+# Bandwidth: 382
+# R2 of Local Model: 0.928393814080233
+# Bandwidth: 383
+# R2 of Local Model: 0.928554527374789
+# Bandwidth: 384
+# R2 of Local Model: 0.929997689542621
+# Bandwidth: 385
+# R2 of Local Model: 0.928451798032526
+# Bandwidth: 386
+# R2 of Local Model: 0.928606446772016
+# Bandwidth: 387
+# R2 of Local Model: 0.927572173787888
+# Bandwidth: 388
+# R2 of Local Model: 0.9279460190051
+# Bandwidth: 389
+# R2 of Local Model: 0.928639325905448
+# Bandwidth: 390
+# R2 of Local Model: 0.927425893678889
+# Bandwidth: 391
+# R2 of Local Model: 0.928984441112024
+# Bandwidth: 392
+# R2 of Local Model: 0.929309280214433
+# Bandwidth: 393
+# R2 of Local Model: 0.928634927942065
+# Bandwidth: 394
+# R2 of Local Model: 0.927712167511897
+# Bandwidth: 395
+# R2 of Local Model: 0.92926953966394
+# Bandwidth: 396
+# R2 of Local Model: 0.92729235036897
+# Bandwidth: 397
+# R2 of Local Model: 0.927968728080108
+# Bandwidth: 398
+# R2 of Local Model: 0.928743814521345
+# Bandwidth: 399
+# R2 of Local Model: 0.92843759664944
+# Bandwidth: 400
+# R2 of Local Model: 0.927845394422112
+# Bandwidth: 401
+# R2 of Local Model: 0.927834121000581
+# Bandwidth: 402
+# R2 of Local Model: 0.92772708923665
+# Bandwidth: 403
+# R2 of Local Model: 0.928456765302502
+# Bandwidth: 404
+# R2 of Local Model: 0.928707329746776
+# Bandwidth: 405
+# R2 of Local Model: 0.928201723851263
+# Bandwidth: 406
+# R2 of Local Model: 0.927933401611096
+# Bandwidth: 407
+# R2 of Local Model: 0.928078755992115
+# Bandwidth: 408
+# R2 of Local Model: 0.92854535038349
+# Bandwidth: 409
+# R2 of Local Model: 0.928843574362936
+# Bandwidth: 410
+# R2 of Local Model: 0.929569049808885
+# Bandwidth: 411
+# R2 of Local Model: 0.926971642583936
+# Bandwidth: 412
+# R2 of Local Model: 0.928641261036375
+# Bandwidth: 413
+# R2 of Local Model: 0.928638800541796
+# Bandwidth: 414
+# R2 of Local Model: 0.927717133079944
+# Bandwidth: 415
+# R2 of Local Model: 0.929141072043574
+# Bandwidth: 416
+# R2 of Local Model: 0.928819539176847
+# Bandwidth: 417
+# R2 of Local Model: 0.928112567996163
+# Bandwidth: 418
+# R2 of Local Model: 0.928726864592745
+# Bandwidth: 419
+# R2 of Local Model: 0.92868879797587
+# Bandwidth: 420
+# R2 of Local Model: 0.928535230457292
+# Bandwidth: 421
+# R2 of Local Model: 0.928525595541211
+# Bandwidth: 422
+# R2 of Local Model: 0.92841857485932
+# Bandwidth: 423
+# R2 of Local Model: 0.928573329455401
+# Bandwidth: 424
+# R2 of Local Model: 0.928389768864086
+# Bandwidth: 425
+# R2 of Local Model: 0.928208100557079
+# Bandwidth: 426
+# R2 of Local Model: 0.928417597646
+# Bandwidth: 427
+# R2 of Local Model: 0.928920331982284
+# Bandwidth: 428
+# R2 of Local Model: 0.928862463865919
+# Bandwidth: 429
+# R2 of Local Model: 0.929183290315554
+# Bandwidth: 430
+# R2 of Local Model: 0.928074307805113
+# Bandwidth: 431
+# R2 of Local Model: 0.929398256657408
+# Bandwidth: 432
+# R2 of Local Model: 0.929389867029869
+# Bandwidth: 433
+# R2 of Local Model: 0.927452734648107
+# Bandwidth: 434
+# R2 of Local Model: 0.927332916905707
+```
+
+#### Running the GRF model
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive <- grf(formula = PRICE ~ AREA_SQ +
+                  storey_order + LEASE_M +
+                  PROX_CBD + PROX_ELDERCARE + PROX_HAWKER +
+                  PROX_ISP + PROX_MRT + PROX_PARK + PROX_TOP_PRI + 
+                  PROX_SHOPPING + PROX_SUPERMARKET + NUM_KINDERGARTEN +
+                  NUM_CHILDCARE + NUM_BUS_STOPS + NUM_PRI_SCHS + 
+                  NUM_TOURIST_SITES,
+                  dframe=resale_flat_train_6mth_no_geom, 
+                  bw=380,
+                  kernel="adaptive",
+                  coords=coords_train,
+                  ntree=100)
+```
+
+Save Model Output
+
+```{r}
+#| eval: false
+write_rds(gwRF_adaptive, "data/model/gwRF_adaptive.rds")
+```
+
+Read Model Output
+
+```{r}
+gwRF_adaptive <- read_rds("data/model/gwRF_adaptive.rds")
+```
+
+### Predicting with Test Data
+
+Drop the geometry column
+
+```{r}
+resale_flat_test_nogeom <- cbind(resale_flat_test, coords_test) %>% 
+  st_drop_geometry()
+```
+
+```{r}
+#| eval: false
+gwRF_pred <- predict.grf(gwRF_adaptive, 
+                           resale_flat_test_nogeom, 
+                           x.var.name="X",
+                           y.var.name="Y", 
+                           local.w=1,
+                           global.w=0)
+```
+
+Save the Test for future use
+
+```{r}
+#| eval: false
+write_rds(gwRF_pred, "data/model/GRF_pred.rds")
+```
+
+```{r}
+gwRF_pred <- read_rds("data/model/GRF_pred.rds")
+```
+
+Convert the predicting output into a data frame
+
+```{r}
+#| eval: false
+GRF_pred_df <- as.data.frame(gwRF_pred)
+```
+
+Bind the predicted value onto the test values
+
+```{r}
+#| eval: false
+resale_flat_test_bind <- cbind(resale_flat_test_nogeom, GRF_pred_df)
+```
+
+Write and save
+
+```{r}
+#| eval: false
+write_rds(resale_flat_test_bind, "data/model/resale_flat_test_bind.rds")
+```
+
+Load the file
+
+```{r}
+resale_flat_test_bind <- read_rds("data/model/resale_flat_test_bind.rds")
+```
+
+Calculating the Root Mean Square Error
+
+```{r}
+rmse(resale_flat_test_bind$PRICE, 
+     resale_flat_test_bind$gwRF_pred)
+```
+
+### Visualizing the predicted values
+
+```{r}
+ggplot(data = resale_flat_test_bind,
+       aes(x = gwRF_pred,
+           y = PRICE)) +
+  geom_point()
 ```
