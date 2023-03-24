@@ -1,7 +1,7 @@
 ---
 title: "Take-Home Exercise 3"
 date: "11 March 2023"
-date-modified: "11 March 2023"
+date-modified: "24 March 2023"
 author: "Tan Wen Yang"
 execute: 
   echo: true
@@ -10,18 +10,47 @@ execute:
 editor: visual
 ---
 
-### Loading in all the packages and data
+### Background:
 
-***NOTE: TAKE THE PROF's MPSZ 2019 DATA FROM INCLASS-EX 09!!!! Rather than 2014***
+Singapore housing prices (HDB flats) are a form of public housing in Singapore that are designed to be affordable for the majority of the population. However, over the years, HDB prices have slowly been on the incline, influenced by various factors such as policies, locales, economic growth as well as its amenities and proximity to areas such as CBD. While there are policies in place by the government to stabilize pricing, they are still largely influenced by factors surrounding the HDB areas.
 
-Compile to rds once the data wrangling part is done.
+### Packages used:
 
-Geographically weighted methods (REgression / Random FoREST) and Ordinary Least Square Method (Conventional non-geo-weighted linear regression)
+-   **sf**: Used for importing and processing geospatial data
 
-Note that corrplot cannot be loaded (Therefore has to be loaded from package)
+-   **tidyverse**: A collection of packages to manipulate data
+
+-   **tmap**: Used for creating thematic maps
+
+-   **onemapsapi**: Used to query Singapore-specific spatial point data.
+
+-   **httr**: Used for calling GET/POST requests for APIs
+
+-   **jsonlite**: Used for parsing JSON files
+
+-   **olsrr**: Used for building the Ordinary least squares model
+
+-   **GWmodel**: Collection of spatial statistical methods - Mainly used for GWR and also its summary methods.
+
+-   **dotenv**: Reading the API key from environment file
+
+-   **matrixStats**: A convenient way to perform functions over rows and columns of matrices
+
+-   **spdep**: Used to create spatial weights matrix objects.
+
+-   **SpatialML**: A collection of packages. Mainly used to bandwidth calculations and performing geographically random forest methods.
+
+-   **Metrics**: Used for calculating RMSE in our case.
+
+-   **corrplot**: Used for mapping the Correlation plot, not included in pacman as there are some package issues
+
+-   **ggpubr**: Used for data visualization and analysis
+
+Loading in all the packages and data
 
 ```{r}
-pacman::p_load(sf, tidyverse, tmap, sfdep, onemapsgapi, httr, jsonlite, olsrr, ggpubr, GWmodel, dotenv, matrixStats, spdep, SpatialML, Metrics, rsample)
+pacman::p_load(sf, tidyverse, tmap, onemapsgapi, httr, jsonlite, olsrr, GWmodel, dotenv, matrixStats, spdep, SpatialML, Metrics, ggpubr)
+#rsample
 ```
 
 ### Geospatial Data:
@@ -602,7 +631,7 @@ In the following code chunk, the goal is to retrieve coordinates for a given sea
 
 The required variables to be included in the GET request are searchVal, returnGeom {Y/N}, and getAddrDetails {Y/N}.
 
-The JSON response returned will contain multiple fields, but the code is only interested in the postal code and coordinates like Latitude & Longitude. A new dataframe is created to store each final set of coordinates retrieved during the loop, and the number of responses returned is checked to append to the main dataframe accordingly. Invalid addresses are also checked, and the response is appended to the main dataframe using rbind() function of base R package.
+The JSON response returned will contain multiple fields, but we are only interested in the postal code and coordinates like Latitude & Longitude. A new dataframe is created to store each final set of coordinates retrieved during the loop, and the number of responses returned is checked to append to the main dataframe accordingly. Invalid addresses are also checked, and the response is appended to the main dataframe using rbind() function of base R package.
 
 ```{r}
 #| eval: false
@@ -981,7 +1010,7 @@ Now that we have finished our data wrangling, we can move into exploratory analy
 
 We will start by visualizing the resale prices
 
-```{r}
+```{r fig.width=12, fig.height=8}
 ggplot(data=final_resale_output, aes(x=`PRICE`)) +
   geom_histogram(bins=20, color="black", fill="light blue") +
     labs(title = "Distribution of Resale Prices",
@@ -1024,7 +1053,7 @@ for (i in 1:length(s_factors)) {
 
 We'll use the ggarrange() function to organize them into a 2x2 column row plot.
 
-```{r}
+```{r fig.width=12, fig.height=8}
 ggarrange(plotlist = s_factor_hist_list,
           ncol = 2,
           nrow = 2)
@@ -1062,7 +1091,7 @@ for (i in 1:length(l_factor)) {
 }
 ```
 
-```{r}
+```{r fig.width=12, fig.height=8}
 ggarrange(plotlist = l_factor_hist_list,
           ncol= 4,
           nrow = 4)
@@ -1085,7 +1114,7 @@ tm_shape(final_resale_output) +
 
 Change back to plot.
 
-```{r}
+```{r fig.width=12, fig.height=8}
 tmap_mode("plot")
 ```
 
@@ -1102,7 +1131,7 @@ final_resale_output_nogeom <- final_resale_output %>%
 
 **View the chart**
 
-```{r}
+```{r fig.width=12, fig.height=8}
 corrplot::corrplot(cor(final_resale_output_nogeom[, 5:ncol(final_resale_output_nogeom)]), diag = FALSE, order = "AOE",
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
@@ -1178,7 +1207,7 @@ rmse(test_data_ols_lm$PRICE,
 
 ### Visualize the Predicted Values (Non spatially weighted)
 
-```{r}
+```{r fig.width=12, fig.height=8}
 ggplot(data = test_data_ols_lm,
        aes(x = lm_ols_pred,
            y = PRICE)) +
@@ -1512,6 +1541,11 @@ Convert the predicting output into a data frame
 GRF_pred_df <- as.data.frame(gwRF_pred)
 ```
 
+```{r}
+#| eval: false
+summary(gwRF_adaptive$LocalModelSummary)
+```
+
 Bind the predicted value onto the test values
 
 ```{r}
@@ -1547,3 +1581,51 @@ ggplot(data = resale_flat_test_bind,
            y = PRICE)) +
   geom_point()
 ```
+
+### Evaluation between OLS and Geographic Random Forest
+
+We first look at the variable importance from GRF
+
+```{r}
+vi_df <- as.data.frame(gwRF_adaptive$Global.Model$variable.importance)
+```
+
+```{r}
+vi_df
+```
+
+From the result above, we can see that Proximity to CBD contributes the greatest towards affecting the prices. Followed by remaining lease, storey the flat is in and Area SQ. These are expected, however the unexpected was how proximity to a top primary school comes right after, indicating that having a top primary school in its vicinity is a strong indicator in affecting prices.
+
+This goes to show that people are willing to spend and drive up market prices just to ensure proximity to top primary schools in order to give their children the best start.
+
+### OLS Stats:
+
+| Stats |          |
+|-------|----------|
+| RMSE  | 82456.97 |
+| R2    | 0.7189   |
+
+### Geographical Random Forest
+
+| Stats     |          |
+|-----------|----------|
+| RMSE      | 34547.61 |
+| Global R2 | 0.943793 |
+
+From the results it is immediately evident that geographical weight is a strong predictor as well. But why is that?
+
+It is due to a concept known as '*spatial heterogeneity*'. This is an important factor that OLS does not take into account. In regular OLS, it assumes that the relationship between housing prices for HDB and other explanatory variables are constant across all the study areas. However, it does not take into account the fact that housing prices may be influenced by different factors in different neighborhoods, and this can give rise to spatial heterogeneity.
+
+Spatial heterogeneity refers to the variation in spatial patterns or distributions of a phenomenon or variable across a given area. In other words, it is the idea that things or attributes can differ in space, and spatial differences can be significant.
+
+For example, location specific factors in our case such as proximity to good schools, CBD can have an effect on housing prices on different neighborhoods. Geographically Weighted Regression (GWR) takes into account this spatial heterogeneity by allowing for spatially varying relationships between the explanatory variables and housing prices. By estimating the relationship between the variables at each location, GWR can identify the underlying factors that are driving spatial variation in housing prices.
+
+Therefore, by using our proximity-based explanatory variable together with our GWR model, we can model the localized relationship to help us better understand the prediction of housing prices as it can capture the influential variables at a neighborhood level that OLS can miss.
+
+Hence, using GWR is recommended over OLS as it provides a more nuanced and most importantly, locally specific insights which can produce more accurate predictions of housing prices across the neighborhood.
+
+## Acknowledgement:
+
+-   Prof Kam for his guidance and notes
+
+-   Megan and Nor Aisyah for the codes and preparations
